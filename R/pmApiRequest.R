@@ -1,7 +1,6 @@
 library(rentrez)
 library(XML)
-api_key="b2018319aec685456e5933653e55187b1807"
-
+api_key=NULL
 entrez_db_searchable('pubmed')
 
 d_search <- entrez_search(db="pubmed", term="Diabetes Mellitus, Type 1[MeSH Terms]" , retmax=0,
