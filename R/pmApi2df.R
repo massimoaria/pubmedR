@@ -58,7 +58,7 @@ pmApi2df <- function(P, format="bibliometrix"){
         df$TI[i] <- a["MedlineCitation.Article.ArticleTitle"]
 
         ## Publication Year
-        df$PY <- a["MedlineCitation.Article.Journal.JournalIssue.PubDate.Year"]
+        df$PY[i] <- a["MedlineCitation.Article.Journal.JournalIssue.PubDate.Year"]
 
         ## Co-Authors
         AU_last_ind <- which(items == "MedlineCitation.Article.AuthorList.Author.LastName")
