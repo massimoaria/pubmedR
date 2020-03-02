@@ -130,10 +130,10 @@ pmApi2df <- function(P, format="bibliometrix"){
 
     if (format == "bibliometrix") {
       DI <- df$DI
-      URL <- df$URL
       df <- data.frame(lapply(df, toupper), stringsAsFactors = FALSE)
       df$DI <- DI
-      df$URL <- URL
+      M$AU_CO="NA"
+      M$AU1_CO="NA"
     }
 
     ### PY
