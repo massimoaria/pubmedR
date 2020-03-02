@@ -47,6 +47,7 @@ pmApi2df <- function(P, format="bibliometrix"){
         a <- list2char(P[[i]])
 
         items<- names(a)
+
         ## Language
         df$LA[i] <- a["MedlineCitation.Article.Language"]
 
@@ -85,7 +86,15 @@ pmApi2df <- function(P, format="bibliometrix"){
         df$ID[i] <- df$MESH[i] <- paste(a[ID_ind],collapse=";")
 
         ## Abstract
-        df$AB[i] <- a["MedlineCitation.Article.Abstract.AbstractText"]
+        ind <- which(items %in% "MedlineCitation.Article.Abstract.AbstractText.text" )
+        if (length(ind)>0){
+          df$AB[i] <- paste(a[ind],collapse=" ")
+        }else{
+          ind <- which(items %in% "MedlineCitation.Article.Abstract.AbstractText")
+          if (length(ind)>0){
+            df$AB[i] <- a[ind]
+          }
+        }
 
         ## Journals
         df$SO[i] <- a["MedlineCitation.Article.Journal.Title"]
