@@ -1,70 +1,75 @@
-library(rentrez)
-library(XML)
-api_key=NULL
-entrez_db_searchable('pubmed')
+#' Gather bibliographic content from PubMed database using NCBI entrez API
+#'
+#' It gathers metadata about publications from the NCBI PubMed database.
+#' The function \code{pmApiRequest} queries NCBI PubMed using an entrez query formulated through the function \code{pmQueryBuild}.
+#'
+#' @param query is a character. It contains a search query formulated using the Entrez query language.
+#' @param limit is numeric. It indicates the max number of records to download.
+#' @param api_key is a character. It contains a valid api key API keys for the NCBI E-utilities.
+#'
+#' @return a list cointaining bibliographic metadata downloaded from NCBI PubMed.
+#'
+#' To obtain a free access to NCBI API, please visit: \href{https://www.ncbi.nlm.nih.gov/pmc/tools/developers/}{https://www.ncbi.nlm.nih.gov/pmc/tools/developers/}
+#'
+#' To obtain more information about how to wirte a NCBI search query, please visit: \href{}{}
+#' @examples
+#'
+#' # query <- "bibliometric"
+#' # D <- pmApiRequest(query = query, limit = 1000, api_key = NULL)
+#'
+#' @seealso \code{\link{pmQueryBuild}}
+#' @seealso \code{\link{pmQueryTotalCount}}
+#' @seealso \code{\link{pmApi2df}}
+#'
+#' @export
 
-d_search <- entrez_search(db="pubmed", term="Diabetes Mellitus, Type 1[MeSH Terms]" , retmax=0,
-                          api_key =api_key, use_history = T)
-d_search
-limit <- 152
-n <- d_search$count
-n <- min(n,limit)
-step <- 200
-step <- min(limit, step)
-metadata <- list()
-stop <- FALSE
-s <- 1
+pmApiRequest <- function(query, limit, api_key=NULL){
 
-while(!isTRUE(stop)) {
-  multi_summs <-
-    entrez_fetch(
-      db = "pubmed",
-      web_history = d_search$web_history,
-      retstart = s,
-      retmax = step,
-      rettype = "xml",
-      parsed = T,
-      api_key = api_key
-    )
-  multi_summs <- xmlToList(multi_summs, simplify = F)
-  metadata <- c(metadata, multi_summs)
+  ## query total count
+  res <- pmQueryTotalCount(query = query, api_key = api_key)
 
-  if (n <= (s + step)) {
-    stop <- TRUE
-  } else{
-    s <- s + step
-    if ((s + step) > limit) {
-      step <- (n - s + 1)
+  n <- min(res$n,limit)
+  step <- 200
+  step <- min(limit, step)
+  metadata <- list()
+  stop <- FALSE
+  s <- 1
+
+
+  ## download metadata
+  while(!isTRUE(stop)) {
+    multi_summs <-
+      entrez_fetch(
+        db = "pubmed",
+        web_history = res$web_history,
+        retstart = s,
+        retmax = step,
+        rettype = "xml",
+        parsed = T,
+        api_key = api_key
+      )
+    multi_summs <- xmlToList(multi_summs, simplify = F)
+    metadata <- c(metadata, multi_summs)
+
+    if (n <= (s + step)) {
+      stop <- TRUE
+    } else{
+      s <- s + step
+      if ((s + step) > limit) {
+        step <- (n - s + 1)
+      }
+      print(s - 1)
     }
-    print(s - 1)
   }
+
+  P <-
+    list(
+      data = metadata,
+      query = query,
+      query_translation = res$query_translation,
+      records_downloaded = n,
+      total_count = res$n
+    )
+  return(P)
 }
 
-
-
-i=1
-
-a <- list2char(metadata[[i]])
-items <- names(a)
-
-
-
-
-
-
-#### function list2char ####
-list2char <- function (x, use.names = TRUE, classes = "ANY")
-{
-  lung <- sum(rapply(x, function(x) 1L, classes = classes))
-  Ch <- vector("list", lung)
-  i <- 0L
-  items <- rapply(x, function(x) {
-    i <<- i + 1L
-    Ch[[i]] <<- x
-    TRUE
-  }, classes = classes)
-  if (use.names && !is.null(nm <- names(items)))
-    names(Ch) <- nm
-  Ch <- unlist(Ch)
-  return(Ch)
-}
