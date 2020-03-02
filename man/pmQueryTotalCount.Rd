@@ -35,7 +35,7 @@ It counts the number of documents that a query returns from the NCBI PubMed data
 
 }
 \seealso{
-\code{\link{pmQueryBuild}}
+\code{\link{pmApiRequest}}
 
 \code{\link{pmApi2df}}
 }

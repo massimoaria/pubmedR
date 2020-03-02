@@ -20,7 +20,7 @@
 #' # query <- "bibliometric"
 #' # D <- pmQueryTotalCount(query = query, api_key = NULL)
 #'
-#' @seealso \code{\link{pmQueryBuild}}
+#' @seealso \code{\link{pmApiRequest}}
 #' @seealso \code{\link{pmApi2df}}
 #'
 #' @export

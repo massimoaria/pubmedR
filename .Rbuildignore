@@ -1,2 +1,12 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^.*\.txt$
+^.*\.bib$
+^.*\.ini$
+^.*\.md$
+^.*\.RData$
+^.*\.jar
+^.*\.net
+LICENCE.*$
+Rubbish
+^_gh-pages$

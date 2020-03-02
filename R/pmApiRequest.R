@@ -11,24 +11,25 @@
 #'
 #' To obtain a free access to NCBI API, please visit: \href{https://www.ncbi.nlm.nih.gov/pmc/tools/developers/}{https://www.ncbi.nlm.nih.gov/pmc/tools/developers/}
 #'
-#' To obtain more information about how to wirte a NCBI search query, please visit: \href{}{}
+#' To obtain more information about how to write a NCBI search query, please visit: \href{https://pubmed.ncbi.nlm.nih.gov/help/#search-tags}{https://pubmed.ncbi.nlm.nih.gov/help/#search-tags}
 #' @examples
 #'
 #' # query <- "bibliometric"
 #' # D <- pmApiRequest(query = query, limit = 1000, api_key = NULL)
 #'
-#' @seealso \code{\link{pmQueryBuild}}
 #' @seealso \code{\link{pmQueryTotalCount}}
 #' @seealso \code{\link{pmApi2df}}
 #'
 #' @export
+#' @import XML
+#' @import rentrez
 
 pmApiRequest <- function(query, limit, api_key=NULL){
 
   ## query total count
   res <- pmQueryTotalCount(query = query, api_key = api_key)
 
-  n <- min(res$n,limit)
+  n <- min(res$total_count,limit)
   step <- 200
   step <- min(limit, step)
   metadata <- list()
@@ -68,7 +69,7 @@ pmApiRequest <- function(query, limit, api_key=NULL){
       query = query,
       query_translation = res$query_translation,
       records_downloaded = n,
-      total_count = res$n
+      total_count = res$total_count
     )
   return(P)
 }

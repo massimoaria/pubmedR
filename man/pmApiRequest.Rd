@@ -18,7 +18,7 @@ a list cointaining bibliographic metadata downloaded from NCBI PubMed.
 
 To obtain a free access to NCBI API, please visit: \href{https://www.ncbi.nlm.nih.gov/pmc/tools/developers/}{https://www.ncbi.nlm.nih.gov/pmc/tools/developers/}
 
-To obtain more information about how to wirte a NCBI search query, please visit: \href{}{}
+To obtain more information about how to write a NCBI search query, please visit: \href{https://pubmed.ncbi.nlm.nih.gov/help/#search-tags}{https://pubmed.ncbi.nlm.nih.gov/help/#search-tags}
 }
 \description{
 It gathers metadata about publications from the NCBI PubMed database.
@@ -31,8 +31,6 @@ The function \code{pmApiRequest} queries NCBI PubMed using an entrez query formu
 
 }
 \seealso{
-\code{\link{pmQueryBuild}}
-
 \code{\link{pmQueryTotalCount}}
 
 \code{\link{pmApi2df}}
