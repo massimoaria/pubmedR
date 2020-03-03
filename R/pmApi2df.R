@@ -132,8 +132,8 @@ pmApi2df <- function(P, format="bibliometrix"){
       DI <- df$DI
       df <- data.frame(lapply(df, toupper), stringsAsFactors = FALSE)
       df$DI <- DI
-      M$AU_CO="NA"
-      M$AU1_CO="NA"
+      df$AU_CO="NA"
+      df$AU1_CO="NA"
     }
 
     ### PY

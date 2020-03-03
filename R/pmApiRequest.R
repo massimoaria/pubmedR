@@ -39,7 +39,7 @@ pmApiRequest <- function(query, limit, api_key=NULL){
 
   ## download metadata
   while(!isTRUE(stop)) {
-    cat("Documents ",s+step - 1," of ", limit,"\n")
+    cat("Documents ",s+step - 1," of ", n,"\n")
     multi_summs <-
       entrez_fetch(
         db = "pubmed",
