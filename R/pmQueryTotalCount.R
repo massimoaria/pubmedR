@@ -1,16 +1,16 @@
 #' Count the number of documents returned by a query
-#' #'
+#'
 #' It counts the number of documents that a query returns from the NCBI PubMed database.
 #'
 #' @param query is a character. It contains a search query formulated using the Entrez query language.
-#' A query can be automatically generated using the function \code{pmQueryBuild}.
-#' @param api_key is a character. It contains a valid api key API keys for the NCBI E-utilities.
+#' @param api_key is a character. It contains a valid API keys for the NCBI E-utilities. Default is \code{api_key=NULL}
+#' The use of NCBI PubMed APIs is entirely free, and doesn't necessary require an API key.
 #'
 #' @return a list. It contains three objects:
 #' \tabular{lll}{
-#' n \tab  \tab the total number of records returned by the query\cr
-#' query_translation \tab       \tab The query transaltion \cr
-#' web_history \tab      \tab the web history object}
+#' n \tab  \tab The total number of records returned by the query\cr
+#' query_translation \tab       \tab The query transaltion by the NCBI Automatic Terms Translation system \cr
+#' web_history \tab      \tab The web history object. The NCBI provides search history features, which isuseful for dealing with large lists of IDs or repeated searches.}
 #'
 #' To obtain a free access to NCBI API, please visit: \href{https://www.ncbi.nlm.nih.gov/pmc/tools/developers/}{https://www.ncbi.nlm.nih.gov/pmc/tools/developers/}
 #'

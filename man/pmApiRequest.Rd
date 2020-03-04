@@ -22,7 +22,11 @@ To obtain more information about how to write a NCBI search query, please visit:
 }
 \description{
 It gathers metadata about publications from the NCBI PubMed database.
+The use of NCBI PubMed APIs is entirely free, and doesn't necessary require an API key.
 The function \code{pmApiRequest} queries NCBI PubMed using an entrez query formulated through the function \code{pmQueryBuild}.
+}
+\details{
+Official API documentation is \href{https://www.ncbi.nlm.nih.gov/books/NBK25500/}{https://www.ncbi.nlm.nih.gov/books/NBK25500/}.
 }
 \examples{
 

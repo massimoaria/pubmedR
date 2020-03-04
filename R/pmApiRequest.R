@@ -1,8 +1,10 @@
 #' Gather bibliographic content from PubMed database using NCBI entrez API
 #'
 #' It gathers metadata about publications from the NCBI PubMed database.
+#' The use of NCBI PubMed APIs is entirely free, and doesn't necessary require an API key.
 #' The function \code{pmApiRequest} queries NCBI PubMed using an entrez query formulated through the function \code{pmQueryBuild}.
 #'
+#' Official API documentation is \href{https://www.ncbi.nlm.nih.gov/books/NBK25500/}{https://www.ncbi.nlm.nih.gov/books/NBK25500/}.
 #' @param query is a character. It contains a search query formulated using the Entrez query language.
 #' @param limit is numeric. It indicates the max number of records to download.
 #' @param api_key is a character. It contains a valid api key API keys for the NCBI E-utilities.
