@@ -46,6 +46,8 @@ To do that, we use the function pmQueryTotalCount.
 ``` r
 res <- pmQueryTotalCount(query = query, api_key = api_key)
 res$total_count
+
+# [1] 2921
 ```
 We could decide to change the query or continue to downloadthe whole collection or a part of it (setting the limit argument lower than res$total_count.
 
@@ -53,12 +55,207 @@ Image, we decided to download the whole collection:
 
 ``` r
 D <- pmApiRequest(query = query, limit = res$total_count, api_key = NULL)
+
+# Documents  200  of  2921 
+# Documents  400  of  2921 
+# Documents  600  of  2921 
+# Documents  800  of  2921 
+# Documents  1000  of  2921 
+# Documents  1200  of  2921 
+# Documents  1400  of  2921 
+# Documents  1600  of  2921 
+# Documents  1800  of  2921 
+# Documents  2000  of  2921 
+# Documents  2200  of  2921 
+# Documents  2400  of  2921 
+# Documents  2600  of  2921 
+# Documents  2800  of  2921 
+# Documents  2921  of  2921 
 ```
 Finally, we transform the xml object D into a data frame, with cases corresponding to documents and variables to Field Tags as used in bibliometrix R package.
 
 ``` r
 M <- pmApi2df(D)
+
+str(M)
+
+# 'data.frame':	2918 obs. of  27 variables:
+ # $ AU    : chr  "DU L;LUO S;LIU G;WANG H;ZHENG L;ZHANG Y" "DUAN L;ZHU G" "YANG C;WANG X;TANG X;BAO X;WANG R" "FERHATOGLU SY;YAPICI N" ...
+ # $ AF    : chr  "DU, LIANG;LUO, SHANXIA;LIU, GUINA;WANG, HAO;ZHENG, LINGLI;ZHANG, YONGGANG" "DUAN, LI;ZHU, GANG" "YANG, CHENGXIAN;WANG, XUE;TANG, XIAOLI;BAO, XINJIE;WANG, RENZHI" "FERHATOGLU, S YÄ±LMAZ;YAPICI, N" ...
+ # $ TI    : chr  "THE 100 TOP-CITED STUDIES ABOUT PAIN AND DEPRESSION." "MAPPING THEME TRENDS AND KNOWLEDGE STRUCTURE OF MAGNETIC RESONANCE IMAGING STUDIES OF SCHIZOPHRENIA: A BIBLIOME"| __truncated__ "RESEARCH TRENDS OF STEM CELLS IN ISCHEMIC STROKE FROM 1999 TO 2018: A BIBLIOMETRIC ANALYSIS." "A BIBLIOMETRIC ANALYSIS OF THE ARTICLES FOCUSING ON THE SUBJECT OF BRAIN DEATH PUBLISHED IN SCIENTIFIC CITATION"| __truncated__ ...
+ # $ SO    : chr  "FRONTIERS IN PSYCHOLOGY" "FRONTIERS IN PSYCHIATRY" "CLINICAL NEUROLOGY AND NEUROSURGERY" "TRANSPLANTATION PROCEEDINGS" ...
+ # $ SO_CO : chr  "SWITZERLAND" "SWITZERLAND" "NETHERLANDS" "UNITED STATES" ...
+ # $ LA    : chr  "ENG" "ENG" "ENG" "ENG" ...
+ # $ DT    : chr  "JOURNAL ARTICLE" "JOURNAL ARTICLE" "JOURNAL ARTICLE" "JOURNAL ARTICLE" ...
+ # $ DE    : chr  "BIBLIOMETRIC REVIEW;CITATION;CITATION ANALYSIS;DEPRESSION;PAIN;TOP-CITED" "BIBLIOMETRIC ANALYSIS;CO-OCCURRENCE ANALYSIS;MAGNETIC RESONANCE IMAGING;SCHIZOPHRENIA;SOCIAL NETWORK ANALYSIS;S"| __truncated__ "BIBLIOMETRICS;ISCHEMIC STROKE;PUBLICATIONS;STEM CELLS;VOSVIEWER" "" ...
+ # $ ID    : chr  "" "" "" "" ...
+ # $ MESH  : chr  "" "" "" "" ...
+ # $ AB    : chr  "WITH THE ESTIMATED HIGH PREVALENCE IN THE POPULATION, THE TWO SYMPTOMS OF PAIN AND DEPRESSION THREATEN THE WELL"| __truncated__ "RECENTLY, MAGNETIC RESONANCE IMAGING (MRI) TECHNOLOGY HAS BEEN WIDELY USED TO QUANTITATIVELY ANALYZE BRAIN STRU"| __truncated__ "MANY STUDIES HAVE EVALUATED THE SAFETY AND EFFICACY OF STEM CELLS AS THERAPEUTIC AGENTS FOR ISCHEMIC STROKE. WE"| __truncated__ "ALTHOUGH THE TOPIC OF BRAIN DEATH (BD) HAS BEEN INCREASING IN POPULARITY CONSIDERABLY IN RECENT YEARS BY THE SN"| __truncated__ ...
+ # $ C1    : chr  "DEPARTMENT OF PERIODICAL PRESS AND NATIONAL CLINICAL RESEARCH CENTER FOR GERIATRICS, WEST CHINA HOSPITAL, SICHU"| __truncated__ "DEPARTMENT OF PSYCHIATRY, THE FIRST AFFILIATED HOSPITAL OF CHINA MEDICAL UNIVERSITY, SHENYANG, CHINA.;DEPARTMEN"| __truncated__ "DEPARTMENT OF NEUROSURGERY, PEKING UNION MEDICAL COLLEGE HOSPITAL, PEKING UNION MEDICAL COLLEGE & CHINESE ACADE"| __truncated__ "DEPARTMENT OF ANESTHESIOLOGY AND REANIMATION, UNIVERSITY OF HEALTH SCIENCES DR. SIYAMI ERSEK TRAINING AND RESEA"| __truncated__ ...
+ # $ CR    : chr  "NA" "NA" "NA" "NA" ...
+ # $ TC    : num  0 0 0 0 0 0 0 0 0 0 ...
+ # $ SN    : chr  "1664-1078" "1664-0640" "1872-6968" "1873-2623" ...
+ # $ J9    : chr  "FRONT PSYCHOL" "FRONT PSYCHIATRY" "CLIN NEUROL NEUROSURG" "TRANSPLANT. PROC." ...
+ # $ JI    : chr  "FRONT PSYCHOL" "FRONT PSYCHIATRY" "CLIN NEUROL NEUROSURG" "TRANSPLANT. PROC." ...
+ # $ PY    : num  2019 2020 2020 2020 2020 ...
+ # $ VL    : chr  "10" "11" "192" NA ...
+ # $ DI    : chr  "10.3389/fpsyg.2019.03072" "10.3389/fpsyt.2020.00027" "10.1016/j.clineuro.2020.105740" "10.1016/j.transproceed.2020.01.034" ...
+ # $ PG    : chr  "3072" "27" "105740" NA ...
+ # $ UT    : chr  "32116876" "32116844" "32114325" "32111384" ...
+ # $ PMID  : chr  "32116876" "32116844" "32114325" "32111384" ...
+ # $ DB    : chr  "PUBMED" "PUBMED" "PUBMED" "PUBMED" ...
+ # $ AU_UN : chr  "DEPARTMENT OF PERIODICAL PRESS AND NATIONAL CLINICAL RESEARCH CENTER FOR GERIATRICS, WEST CHINA HOSPITAL, SICHU"| __truncated__ "DEPARTMENT OF PSYCHIATRY, THE FIRST AFFILIATED HOSPITAL OF CHINA MEDICAL UNIVERSITY, SHENYANG, CHINA.;DEPARTMEN"| __truncated__ "DEPARTMENT OF NEUROSURGERY, PEKING UNION MEDICAL COLLEGE HOSPITAL, PEKING UNION MEDICAL COLLEGE & CHINESE ACADE"| __truncated__ "DEPARTMENT OF ANESTHESIOLOGY AND REANIMATION, UNIVERSITY OF HEALTH SCIENCES DR. SIYAMI ERSEK TRAINING AND RESEA"| __truncated__ ...
+ # $ AU_CO : chr  "NA" "NA" "NA" "NA" ...
+ # $ AU1_CO: chr  "NA" "NA" "NA" "NA" ...
 ```
 
+``` r
+install.packages("bibliometrix")
+library(bibliometrix)
+```
+
+``` r
+results <- biblioAnalysis(M)
+summary(results)
+
+# Main Information about data
+# 
+#  Documents                             2918 
+#  Sources (Journals, Books, etc.)       1275 
+#  Keywords Plus (ID)                    2245 
+#  Author's Keywords (DE)                4212 
+#  Period                                2000 - 2020 
+#  Average citations per documents       0 
+# 
+#  Authors                               8854 
+#  Author Appearances                    12928 
+#  Authors of single-authored documents  229 
+#  Authors of multi-authored documents   8625 
+#  Single-authored documents             307 
+# 
+#  Documents per Author                  0.33 
+#  Authors per Document                  3.03 
+#  Co-Authors per Documents              4.43 
+#  Collaboration Index                   3.31 
+#  
+#  Document types                     
+#  BIOGRAPHY                         4 
+#  CASE REPORTS                      2 
+#  COMMENT                           8 
+#  COMPARATIVE STUDY                 97 
+#  EDITORIAL                         2 
+#  ENGLISH ABSTRACT                  1 
+#  EVALUATION STUDY                  19 
+#  HISTORICAL ARTICLE                82 
+#  INTRODUCTORY JOURNAL ARTICLE      2 
+#  JOURNAL ARTICLE                   2694 
+#  LETTER                            3 
+#  REVIEW                            4 
+#  
+# 
+# Annual Scientific Production
+# 
+#  Year    Articles
+#     2000       10
+#     2001        8
+#     2002       10
+#     2003       16
+#     2004       18
+#     2005       27
+#     2006       37
+#     2007       24
+#     2008       43
+#     2009       58
+#     2010       73
+#     2011       93
+#     2012      121
+#     2013      158
+#     2014      172
+#     2015      225
+#     2016      254
+#     2017      276
+#     2018      380
+#     2019      544
+#     2020      159
+# 
+# Annual Percentage Growth Rate 14.83383 
+# 
+# 
+# Most Productive Authors
+# 
+#    Authors        Articles Authors        Articles Fractionalized
+# 1      SWEILEH WM       62     SWEILEH WM                   25.40
+# 2      ZYOUD SH         59     ZYOUD SH                     18.74
+# 3      AL-JABI SW       48     HO YS                        13.89
+# 4      HO YS            34     AL-JABI SW                   13.00
+# 5      YOON DY          27     HUH S                         9.33
+# 6      SAWALHA AF       26     BORNMANN L                    9.29
+# 7      WANG Y           26     SMITH DR                      9.00
+# 8      ZHANG Y          24     ÅŽENEL E                      7.70
+# 9      BORNMANN L       22     YEUNG AWK                     6.22
+# 10     KHOSA F          22     SHAMIM T                      6.00
+# 
+# 
+# Top manuscripts per citations
+# 
+#                                        Paper          TC TCperYear
+# 1  DU L, 2019, FRONT PSYCHOL                           0         0
+# 2  DUAN L, 2020, FRONT PSYCHIATRY                      0         0
+# 3  YANG C, 2020, CLIN NEUROL NEUROSURG                 0         0
+# 4  FERHATOGLU SY, 2020, TRANSPLANT. PROC.              0         0
+# 5  CHEN L, 2020, PHYTOMEDICINE                         0         0
+# 6  KUNZE KN, 2020, AM J SPORTS MED                     0         0
+# 7  CUOCOLO R, 2020, INSIGHTS IMAGING                   0         0
+# 8  WU M, 2020, J. MATERN. FETAL. NEONATAL. MED.        0         0
+# 9  LEE IS, 2020, J PAIN RES                            0         0
+# 10 SANT'ANNA FH, 2020, INT. J. SYST. EVOL. MICROBIOL.  0         0
+# 
+# 
+# Corresponding Author's Countries
+# 
+#   Country Articles Freq  SCP MCP MCP_Ratio
+# 1      NA     2918    1 2918   0         0
+# 
+# 
+# SCP: Single Country Publications
+# 
+# MCP: Multiple Country Publications
+# 
+# 
+# Total Citations per Country
+# 
+#   Country      Total Citations Average Article Citations
+# 1           NA               0                         0
+# 
+# 
+# Most Relevant Sources
+# 
+#                                                       Sources        Articles
+# 1  PLOS ONE                                                               106
+# 2  SCIENTOMETRICS                                                          67
+# 3  WORLD NEUROSURGERY                                                      55
+# 4  ENVIRONMENTAL SCIENCE AND POLLUTION RESEARCH INTERNATIONAL              36
+# 5  INTERNATIONAL JOURNAL OF ENVIRONMENTAL RESEARCH AND PUBLIC HEALTH       34
+# 6  MEDICINE                                                                31
+# 7  NEURAL REGENERATION RESEARCH                                            29
+# 8  BMJ OPEN                                                                26
+# 9  JOURNAL OF THE MEDICAL LIBRARY ASSOCIATION : JMLA                       26
+# 10 PEERJ                                                                   25
+# 
+# 
+# Most Relevant Keywords
+# 
+#    Author Keywords (DE)      Articles Keywords-Plus (ID)     Articles
+# 1      BIBLIOMETRICS              667  BIBLIOMETRICS             1545
+# 2      BIBLIOMETRIC ANALYSIS      331  HUMANS                    1518
+# 3      BIBLIOMETRIC               172  PERIODICALS AS TOPIC       592
+# 4      CITATION ANALYSIS          123  BIOMEDICAL RESEARCH        483
+# 5      H INDEX                     97  PUBLISHING                 419
+# 6      PUBLICATIONS                84  JOURNAL IMPACT FACTOR      323
+# 7      CITATIONS                   81  PUBLICATIONS               252
+# 8      CITATION                    69  RESEARCH                   252
+# 9      WEB OF SCIENCE              66  UNITED STATES              219
+# 10     SCIENTOMETRICS              64  FEMALE                     174
+```
 
 "# pubmedR" 
