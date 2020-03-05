@@ -25,12 +25,28 @@ You can install the released version of dimensionsR from [CRAN](https://CRAN.R-p
 # install.packages("pubmedR")
 ```
 
-## A brief example
+## Load the package
 
 ``` r
 library(pubmedR)
 ```
-### How to write a query
+
+## A brief example
+
+Imagine, we want to download a metadata collection of journal articles which (1) have used bibliometric approaches in their researches, (2) have been published for the past 20 years (3) and have been written in the English language. 
+
+The workflow mainly consists of four steps:
+
+1. Write the query
+
+2. Check the effectiveness of the query
+
+3. Download the collection of document metadata
+
+4. Convert the download object into a "readable" and and "usable" format
+
+
+## First step: Write a query
 
 First of all, we define a query to submit at the NCBI PubMed system. For example, imagine we want to download a collection of journal articles using bibliometric analyses, published in the last 20 years in the English language. Translating in the query language, we find:
 
@@ -48,7 +64,7 @@ Combining all these elements using the Boolean operator "AND", we obtain the fin
 query <- "bibliometric*[Title/Abstract] AND english[LA] AND Journal Article[PT] AND 2000:2020[DP]"
 ```
 
-### Looking at the query effectiveness
+## Second step: Check the effectiveness of the query
 
 Now, we want to know how many documents could be retrieved by our query. 
 
@@ -59,7 +75,8 @@ res$total_count
 
 # [1] 2921
 ```
-### Document retrieval
+
+## Third step: Download the collection of document metadata
 
 We could decide to change the query or continue to download the whole collection or a part of it (setting the limit argument lower than res$total_count).
 
@@ -96,6 +113,7 @@ The function pmApiRequest returns a list D composed by 5 objects:
 
 - "total_counts". It is an integer object indicating the total number of records matching the query (stored in the "query_translation" object"). 
 
+## Fourth step: Convert the download object into a "readable" and and "usable" format
 
 ### From the xml-structured object to a "classical" data frame
 
@@ -136,7 +154,8 @@ str(M)
  # $ AU1_CO: chr  "NA" "NA" "NA" "NA" ...
 ```
 
-### An overview to the collection using bibliometrix
+
+## An overview to the collection using bibliometrix
 
 Now, we can use some bibliometrix functions to get an overview of the bibliographic collection.
 
@@ -148,6 +167,8 @@ First, we install and load the bibliometrix package:
 install.packages("bibliometrix")
 library(bibliometrix)
 ```
+
+### Main information about the collection
 
 Then, we use the biblioAnalysis and summary functions to perform a descriptive analysis of the data frame:
 
