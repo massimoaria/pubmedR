@@ -54,15 +54,15 @@ The workflow mainly consists of four steps:
 
 ## First step: Write a query
 
-First of all, we define a query to submit at the NCBI PubMed system. For example, imagine we want to download a collection of journal articles using bibliometric analyses, published in the last 20 years in the English language. Translating in the query language, we find:
+First of all, we define a query to submit at the NCBI PubMed system. For example, imagine we want to download a collection of journal articles using bibliometric analyses, published in the last 20 years in the English language. Translating in the query language, we have to set the following statements:
 
-- documents containing the word bibliometric and its variations in their title or abstract: "bibliometric*[Title/Abstract]"
+- *documents containing the word bibliometric and its variations in their title or abstract:* **"bibliometric\*[Title/Abstract]"**
 
-- documents are written in the English language: "english[LA]"
+- *documents are written in the English language:* **"english[LA]"**
 
-- documents that are categorized as Journal Article: "Journal Article[PT]"
+- *documents that are categorized as Journal Article:* **"Journal Article[PT]"**
 
-- documents published from 2000 to 2020: "2000:2020[DP]"
+- *documents published from 2000 to 2020:* **"2000:2020[DP]"**
 
 Combining all these elements using the Boolean operator "AND", we obtain the final query:
 
