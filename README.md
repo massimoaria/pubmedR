@@ -25,11 +25,15 @@ You can install the released version of dimensionsR from [CRAN](https://CRAN.R-p
 # install.packages("pubmedR")
 ```
 
+
+
 ## Load the package
 
 ``` r
 library(pubmedR)
 ```
+
+
 
 ## A brief example
 
@@ -44,6 +48,8 @@ The workflow mainly consists of four steps:
 3. Download the collection of document metadata
 
 4. Convert the download object into a "readable" and and "usable" format
+
+
 
 
 ## First step: Write a query
@@ -64,6 +70,8 @@ Combining all these elements using the Boolean operator "AND", we obtain the fin
 query <- "bibliometric*[Title/Abstract] AND english[LA] AND Journal Article[PT] AND 2000:2020[DP]"
 ```
 
+
+
 ## Second step: Check the effectiveness of the query
 
 Now, we want to know how many documents could be retrieved by our query. 
@@ -75,6 +83,8 @@ res$total_count
 
 # [1] 2921
 ```
+
+
 
 ## Third step: Download the collection of document metadata
 
@@ -113,7 +123,11 @@ The function pmApiRequest returns a list D composed by 5 objects:
 
 - "total_counts". It is an integer object indicating the total number of records matching the query (stored in the "query_translation" object"). 
 
+
+
+
 ## Fourth step: Convert the download object into a "readable" and and "usable" format
+
 
 ### From the xml-structured object to a "classical" data frame
 
@@ -153,6 +167,9 @@ str(M)
  # $ AU_CO : chr  "NA" "NA" "NA" "NA" ...
  # $ AU1_CO: chr  "NA" "NA" "NA" "NA" ...
 ```
+
+
+
 
 
 ## An overview to the collection using bibliometrix
