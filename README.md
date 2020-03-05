@@ -1,14 +1,17 @@
+pubmedR
+====================================
 
-# pubmedR
+## An R package to gather bibliographic data from PubMed. 
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of pubmedR is to gather metadata about publications, patents, grants, clinical trials and policy documents from PubMed database.
+The goal of pubmedR is to gather metadata about publications, grants and clinical trials from PubMed database using NCBI APIs.
+
 
 ## Installation
 
-You can install the developer version of pubmedR from [github](https://github.com) with:
+You can install the developer version of the pubmedR from [GitHub](https://github.com) with:
 
 ``` r
 install.packages("devtools")
@@ -22,36 +25,39 @@ You can install the released version of dimensionsR from [CRAN](https://CRAN.R-p
 # install.packages("pubmedR")
 ```
 
-## Example
+## A brief example
 
 ``` r
 library(pubmedR)
 ```
 
-First of all, we define a query to submit at the NCBI PubMed system.
-For example, imagine we want downlaod a collection of journal articles using bibliometric analyses, published in the last 20 years in English language.
-Translating in the query language, we find:
-- documents cointaining the word bibliometric and its variations in their title or abstract: "bibliometric*[Title/Abstract]"
-- documents written in English language: "english[LA]"
+First of all, we define a query to submit at the NCBI PubMed system. For example, imagine we want to download a collection of journal articles using bibliometric analyses, published in the last 20 years in the English language. Translating in the query language, we find:
+
+- documents containing the word bibliometric and its variations in their title or abstract: "bibliometric*[Title/Abstract]"
+
+- documents are written in the English language: "english[LA]"
+
 - documents that are categorized as Journal Article: "Journal Article[PT]"
-- docuemnts published from the 2000 to the 2020: "2000:2020[DP]"
+
+- documents published from 2000 to 2020: "2000:2020[DP]"
 
 Combining all these elements using the Boolean operator "AND", we obtain the final query:
 
 ``` r
 query <- "bibliometric*[Title/Abstract] AND english[LA] AND Journal Article[PT] AND 2000:2020[DP]"
 ```
-Now, we want to know how many documents should retrieved by our query. 
-To do that, we use the function pmQueryTotalCount.
+Now, we want to know how many documents could be retrieved by our query. 
+
+To do that, we use the function pmQueryTotalCount:
 ``` r
 res <- pmQueryTotalCount(query = query, api_key = api_key)
 res$total_count
 
 # [1] 2921
 ```
-We could decide to change the query or continue to downloadthe whole collection or a part of it (setting the limit argument lower than res$total_count.
+We could decide to change the query or continue to download the whole collection or a part of it (setting the limit argument lower than res$total_count).
 
-Image, we decided to download the whole collection:
+Image, we decided to download the whole collection composed by 2921 documents:
 
 ``` r
 D <- pmApiRequest(query = query, limit = res$total_count, api_key = NULL)
@@ -72,8 +78,20 @@ D <- pmApiRequest(query = query, limit = res$total_count, api_key = NULL)
 # Documents  2800  of  2921 
 # Documents  2921  of  2921 
 ```
-Finally, we transform the xml object D into a data frame, with cases corresponding to documents and variables to Field Tags as used in bibliometrix R package.
+The function pmApiRequest returns a list D composed by 5 objects:
 
+- "data". It is the xml-structured list containing the bibliographic metadata collection downloaded from the PubMed database.
+
+- "query". It a character object containing the original query formulated by the user.
+
+- "query_translation". It a character object containing the query, translated by the NCBI Automatic Terms Translation system and submitted to the PubMed database. 
+
+- "records_downloaded". It is an integer object indicating the total number of records downloaded and stored in "data".
+
+- "total_counts". It is an integer object indicating the total number of records matching the query (stored in the "query_translation" object"). 
+
+
+Finally, we transform the xml-structured object D into a data frame, with cases corresponding to documents and variables to Field Tags as used in the  \href{https://CRAN.R-project.org/package=bibliometrix}{bibliometrix R package}.
 ``` r
 M <- pmApi2df(D)
 
@@ -108,11 +126,16 @@ str(M)
  # $ AU_CO : chr  "NA" "NA" "NA" "NA" ...
  # $ AU1_CO: chr  "NA" "NA" "NA" "NA" ...
 ```
+Now, we can use some bibliometrix functions to get an overview of the bibliographic collection.
+
+First, we install and load the bibliometrix package:
 
 ``` r
 install.packages("bibliometrix")
 library(bibliometrix)
 ```
+
+Then, we use the biblioAnalysis and summary functions to perform a descriptive analysis of the data frame:
 
 ``` r
 results <- biblioAnalysis(M)
