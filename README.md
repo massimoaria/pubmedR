@@ -18,7 +18,7 @@ install.packages("devtools")
 devtools::install_github("massimoaria/pubmedR")
 ```
 
-You can install the released version of dimensionsR from [CRAN](https://CRAN.R-project.org) with:
+You can install the released version of pubmedR from [CRAN](https://CRAN.R-project.org) with:
 
 ``` r
 # not yet on CRAN
@@ -136,7 +136,7 @@ The function pmApiRequest returns a list D composed by 5 objects:
 
 ### From the xml-structured object to a "classical" data frame
 
-Finally, we transform the xml-structured object D into a data frame, with cases corresponding to documents and variables to Field Tags as used in the bibliometrix R package (https://CRAN.R-project.org/package=bibliometrix, https://bibliometrix.org/, https://github.com/massimoaria/bibliometrix).
+Finally, we transform the xml-structured object D into a data frame, with cases corresponding to documents and variables to Field Tags as used in the [bibliometrix R package] (https://CRAN.R-project.org/package=bibliometrix, https://bibliometrix.org/, https://github.com/massimoaria/bibliometrix).
 
 ``` r
 M <- pmApi2df(D)
