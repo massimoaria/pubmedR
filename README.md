@@ -30,6 +30,7 @@ You can install the released version of dimensionsR from [CRAN](https://CRAN.R-p
 ``` r
 library(pubmedR)
 ```
+### How to write a query
 
 First of all, we define a query to submit at the NCBI PubMed system. For example, imagine we want to download a collection of journal articles using bibliometric analyses, published in the last 20 years in the English language. Translating in the query language, we find:
 
@@ -46,6 +47,9 @@ Combining all these elements using the Boolean operator "AND", we obtain the fin
 ``` r
 query <- "bibliometric*[Title/Abstract] AND english[LA] AND Journal Article[PT] AND 2000:2020[DP]"
 ```
+
+### Looking at the query effectiveness
+
 Now, we want to know how many documents could be retrieved by our query. 
 
 To do that, we use the function pmQueryTotalCount:
@@ -55,6 +59,8 @@ res$total_count
 
 # [1] 2921
 ```
+### Document retrieval
+
 We could decide to change the query or continue to download the whole collection or a part of it (setting the limit argument lower than res$total_count).
 
 Image, we decided to download the whole collection composed by 2921 documents:
@@ -91,7 +97,10 @@ The function pmApiRequest returns a list D composed by 5 objects:
 - "total_counts". It is an integer object indicating the total number of records matching the query (stored in the "query_translation" object"). 
 
 
-Finally, we transform the xml-structured object D into a data frame, with cases corresponding to documents and variables to Field Tags as used in the  \href{https://CRAN.R-project.org/package=bibliometrix}{bibliometrix R package}.
+### From the xml-structured object to a "classical" data frame
+
+Finally, we transform the xml-structured object D into a data frame, with cases corresponding to documents and variables to Field Tags as used in the bibliometrix R package (https://CRAN.R-project.org/package=bibliometrix, https://bibliometrix.org/, https://github.com/massimoaria/bibliometrix).
+
 ``` r
 M <- pmApi2df(D)
 
@@ -126,7 +135,12 @@ str(M)
  # $ AU_CO : chr  "NA" "NA" "NA" "NA" ...
  # $ AU1_CO: chr  "NA" "NA" "NA" "NA" ...
 ```
+
+### An overview to the collection using bibliometrix
+
 Now, we can use some bibliometrix functions to get an overview of the bibliographic collection.
+
+bibliometrix is an R-tool for quantitative research in scientometrics and bibliometrics that includes all the main bibliometric methods of analysis (https://CRAN.R-project.org/package=bibliometrix, https://bibliometrix.org/, https://github.com/massimoaria/bibliometrix).
 
 First, we install and load the bibliometrix package:
 
