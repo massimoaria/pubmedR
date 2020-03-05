@@ -2,7 +2,7 @@
 % Please edit documentation in R/pmApiRequest.R
 \name{pmApiRequest}
 \alias{pmApiRequest}
-\title{Gather bibliographic content from PubMed database using NCBI entrez API}
+\title{Gather bibliographic content from PubMed database using NCBI entrez APIs}
 \usage{
 pmApiRequest(query, limit, api_key = NULL)
 }
@@ -36,7 +36,8 @@ Official API documentation is \href{https://www.ncbi.nlm.nih.gov/books/NBK25500/
 }
 \examples{
 
-# query <- "bibliometric"
+# query <- query <- "bibliometric*[Title/Abstract] AND english[LA]
+#                    AND Journal Article[PT] AND 2000:2020[DP]"
 # D <- pmApiRequest(query = query, limit = 1000, api_key = NULL)
 
 }

@@ -16,7 +16,7 @@
 #'
 #' # Example: Querying a collection of publications
 #'
-#' # query <- "bibliometric*[TITL] AND english[LA] AND article[PT]"
+#' # query <- "bibliometric*[Title/Abstract] AND english[LA] AND Journal Article[PT] AND 2000:2020[DP]"
 #' # D <- pmApiRequest(query = query, limit = 1000, api_key = NULL)
 #' # M <- pmApi2df(D)
 #'

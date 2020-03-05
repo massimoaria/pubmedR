@@ -17,7 +17,8 @@
 #'
 #' @examples
 #'
-#' # query <- "bibliometric"
+#' # query <- "bibliometric*[Title/Abstract] AND english[LA]
+#' #           AND Journal Article[PT] AND 2000:2020[DP]"
 #' # D <- pmQueryTotalCount(query = query, api_key = NULL)
 #'
 #' @seealso \code{\link{pmApiRequest}}

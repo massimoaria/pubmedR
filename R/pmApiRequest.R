@@ -1,4 +1,4 @@
-#' Gather bibliographic content from PubMed database using NCBI entrez API
+#' Gather bibliographic content from PubMed database using NCBI entrez APIs
 #'
 #' It gathers metadata about publications from the NCBI PubMed database.
 #' The use of NCBI PubMed APIs is entirely free, and doesn't necessary require an API key.
@@ -22,7 +22,8 @@
 #' To obtain more information about how to write a NCBI search query, please visit: \href{https://pubmed.ncbi.nlm.nih.gov/help/#search-tags}{https://pubmed.ncbi.nlm.nih.gov/help/#search-tags}
 #' @examples
 #'
-#' # query <- "bibliometric"
+#' # query <- query <- "bibliometric*[Title/Abstract] AND english[LA]
+#' #                    AND Journal Article[PT] AND 2000:2020[DP]"
 #' # D <- pmApiRequest(query = query, limit = 1000, api_key = NULL)
 #'
 #' @seealso \code{\link{pmQueryTotalCount}}
