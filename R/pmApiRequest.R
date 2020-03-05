@@ -9,7 +9,13 @@
 #' @param limit is numeric. It indicates the max number of records to download.
 #' @param api_key is a character. It contains a valid api key API keys for the NCBI E-utilities.
 #'
-#' @return a list cointaining bibliographic metadata downloaded from NCBI PubMed.
+#' @return a list D composed by 5 objects:
+#'\tabular{lll}{
+#' data \tab \tab It is the xml-structured list containing the bibliographic metadata collection downloaded from the PubMed database.\cr
+#' query \tab \tab It a character object containing the original query formulated by the user.\cr
+#' query_translation \tab \tab It a character object containing the query, translated by the NCBI Automatic Terms Translation system and submitted to the PubMed database.\cr
+#' records_downloaded \tab \tab It is an integer object indicating the total number of records downloaded and stored in "data".\cr
+#' total_counts \tab \tab It is an integer object indicating the total number of records matching the query (stored in the "query_translation" object").}
 #'
 #' To obtain a free access to NCBI API, please visit: \href{https://www.ncbi.nlm.nih.gov/pmc/tools/developers/}{https://www.ncbi.nlm.nih.gov/pmc/tools/developers/}
 #'

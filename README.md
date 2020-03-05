@@ -79,9 +79,14 @@ Now, we want to know how many documents could be retrieved by our query.
 To do that, we use the function pmQueryTotalCount:
 ``` r
 res <- pmQueryTotalCount(query = query, api_key = api_key)
+
 res$total_count
 
 # [1] 2921
+
+D$query_translation
+
+[1] "(bibliometric[Title/Abstract] OR bibliometrica[Title/Abstract] OR bibliometrical[Title/Abstract] OR bibliometrically[Title/Abstract] OR bibliometricas[Title/Abstract] OR bibliometrician[Title/Abstract] OR bibliometricians[Title/Abstract] OR bibliometricly[Title/Abstract] OR bibliometrico[Title/Abstract] OR bibliometricos[Title/Abstract] OR bibliometrics[Title/Abstract] OR bibliometrics'[Title/Abstract] OR bibliometricsmethod[Title/Abstract] OR bibliometricstrade[Title/Abstract]) AND english[LA] AND Journal Article[PT] AND 2000[PDAT] : 2020[PDAT]"
 ```
 
 
