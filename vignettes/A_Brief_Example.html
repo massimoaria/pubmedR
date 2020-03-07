@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>pubmedR</title>
+
+
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">pubmedR</h1>
+
+
+
+<div id="an-r-package-to-gather-bibliographic-data-from-pubmed." class="section level2">
+<h2>An R-package to gather bibliographic data from PubMed.</h2>
+<p><strong>by Massimo Aria</strong></p>
+<p> </p>
+<pre><code>The goal of pubmedR is to gather metadata about publications, grants and clinical trials from PubMed database using NCBI APIs.</code></pre>
+<!-- badges: start -->
+<!-- badges: end -->
+<p> </p>
+<p><em><a href="http://github.com/massimoaria/pubmedR" class="uri">http://github.com/massimoaria/pubmedR</a></em></p>
+<p><em>Latest version: 0.0.1, 2020-03-07</em></p>
+<p> </p>
+</div>
+<div id="installation" class="section level2">
+<h2>Installation</h2>
+<p>You can install the developer version of the pubmedR from <a href="https://github.com">GitHub</a> with:</p>
+<pre><code>install.packages(&quot;devtools&quot;)
+devtools::install_github(&quot;massimoaria/pubmedR&quot;)</code></pre>
+<p>You can install the released version of pubmedR from <a href="https://CRAN.R-project.org">CRAN</a> with:</p>
+<pre><code>install.packages(&quot;pubmedR&quot;)</code></pre>
+<p> </p>
+<p> </p>
+</div>
+<div id="load-the-package" class="section level2">
+<h2>Load the package</h2>
+<pre><code>library(pubmedR)</code></pre>
+<p> </p>
+<p> </p>
+</div>
+<div id="a-brief-example" class="section level1">
+<h1>A brief example</h1>
+<p>Imagine, we want to download a metadata collection of journal articles which (1) have used bibliometric approaches in their researches, (2) have been published for the past 20 years (3) and have been written in the English language.</p>
+<p>The workflow mainly consists of four steps:</p>
+<ol style="list-style-type: decimal">
+<li><p>Write the query</p></li>
+<li><p>Check the effectiveness of the query</p></li>
+<li><p>Download the collection of document metadata</p></li>
+<li><p>Convert the download object into a “readable” and and “usable” format</p></li>
+</ol>
+<p> </p>
+<p>By default, the access to NCBI API system is free and does not necessarily require an “API key”. In this case, NCBI limits users to making only 3 requests per second. Users who register for an “API key” are able to make up to ten requests per second.</p>
+<p>Obtaing a key is very simple, you just need to register for <strong><em>“my ncbi account”</em></strong> (<em><a href="https://www.ncbi.nlm.nih.gov/account/" class="uri">https://www.ncbi.nlm.nih.gov/account/</a></em>) then click on a button in the <strong><em>“account settings page”</em></strong> (<em><a href="https://www.ncbi.nlm.nih.gov/account/settings/" class="uri">https://www.ncbi.nlm.nih.gov/account/settings/</a></em>).</p>
+<p>Once you have an API key, set the argument api_key=“<em>your API key</em>” otherwise api_key=“<em>NULL</em>”:</p>
+<pre><code># if you have got an API key
+api_key &lt;- &quot;your API key&quot;
+
+# if you haven&#39;t got an API key
+api_key = NULL</code></pre>
+<p> </p>
+<div id="first-step-write-a-query" class="section level2">
+<h2>First step: Write a query</h2>
+<p>First of all, we define a query to submit at the NCBI PubMed system. For example, imagine we want to download a collection of journal articles using bibliometric analyses, published in the last 20 years in the English language. Translating in the query language, we have to set the following statements:</p>
+<ul>
+<li><p><em>documents containing the word bibliometric and its variations in their title or abstract:</em> <strong>“bibliometric*[Title/Abstract]”</strong></p></li>
+<li><p><em>documents are written in the English language:</em> <strong>“english[LA]”</strong></p></li>
+<li><p><em>documents that are categorized as Journal Article:</em> <strong>“Journal Article[PT]”</strong></p></li>
+<li><p><em>documents published from 2000 to 2020:</em> <strong>“2000:2020[DP]”</strong></p></li>
+</ul>
+<p>Combining all these elements using the Boolean operator “AND”, we obtain the final query:</p>
+<pre><code>query &lt;- &quot;bibliometric*[Title/Abstract] AND english[LA] AND Journal Article[PT] AND 2000:2020[DP]&quot;</code></pre>
+<p> </p>
+</div>
+<div id="second-step-check-the-effectiveness-of-the-query" class="section level2">
+<h2>Second step: Check the effectiveness of the query</h2>
+<p>Now, we want to know how many documents could be retrieved by our query.</p>
+<p>To do that, we use the function pmQueryTotalCount:</p>
+<pre><code>res &lt;- pmQueryTotalCount(query = query, api_key = api_key)
+
+res$total_count
+
+# [1] 2921
+
+D$query_translation
+
+[1] &quot;(bibliometric[Title/Abstract] OR bibliometrica[Title/Abstract] OR bibliometrical[Title/Abstract] OR bibliometrically[Title/Abstract] OR bibliometricas[Title/Abstract] OR bibliometrician[Title/Abstract] OR bibliometricians[Title/Abstract] OR bibliometricly[Title/Abstract] OR bibliometrico[Title/Abstract] OR bibliometricos[Title/Abstract] OR bibliometrics[Title/Abstract] OR bibliometrics&#39;[Title/Abstract] OR bibliometricsmethod[Title/Abstract] OR bibliometricstrade[Title/Abstract]) AND english[LA] AND Journal Article[PT] AND 2000[PDAT] : 2020[PDAT]&quot;</code></pre>
+<p> </p>
+</div>
+<div id="third-step-download-the-collection-of-document-metadata" class="section level2">
+<h2>Third step: Download the collection of document metadata</h2>
+<p>We could decide to change the query or continue to download the whole collection or a part of it (setting the limit argument lower than res$total_count).</p>
+<p>Image, we decided to download the whole collection composed by 2921 documents:</p>
+<pre><code>D &lt;- pmApiRequest(query = query, limit = res$total_count, api_key = NULL)
+
+# Documents  200  of  2921 
+# Documents  400  of  2921 
+# Documents  600  of  2921 
+# Documents  800  of  2921 
+# Documents  1000  of  2921 
+# Documents  1200  of  2921 
+# Documents  1400  of  2921 
+# Documents  1600  of  2921 
+# Documents  1800  of  2921 
+# Documents  2000  of  2921 
+# Documents  2200  of  2921 
+# Documents  2400  of  2921 
+# Documents  2600  of  2921 
+# Documents  2800  of  2921 
+# Documents  2921  of  2921 </code></pre>
+<p>The function pmApiRequest returns a list D composed by 5 objects:</p>
+<ul>
+<li><p>“data”. It is the xml-structured list containing the bibliographic metadata collection downloaded from the PubMed database.</p></li>
+<li><p>“query”. It a character object containing the original query formulated by the user.</p></li>
+<li><p>“query_translation”. It a character object containing the query, translated by the NCBI Automatic Terms Translation system and submitted to the PubMed database.</p></li>
+<li><p>“records_downloaded”. It is an integer object indicating the total number of records downloaded and stored in “data”.</p></li>
+<li><p>“total_counts”. It is an integer object indicating the total number of records matching the query (stored in the “query_translation” object&quot;).</p></li>
+</ul>
+<p> </p>
+</div>
+<div id="fourth-step-convert-the-download-object-into-a-readable-and-and-usable-format" class="section level2">
+<h2>Fourth step: Convert the download object into a “readable” and and “usable” format</h2>
+<div id="from-the-xml-structured-object-to-a-classical-data-frame" class="section level3">
+<h3>From the xml-structured object to a “classical” data frame</h3>
+<p>Finally, we transform the xml-structured object D into a data frame, with cases corresponding to documents and variables to Field Tags as used in the <strong>bibliometrix R package</strong> (<a href="https://CRAN.R-project.org/package=bibliometrix" class="uri">https://CRAN.R-project.org/package=bibliometrix</a>, <a href="https://bibliometrix.org/" class="uri">https://bibliometrix.org/</a>, <a href="https://github.com/massimoaria/bibliometrix" class="uri">https://github.com/massimoaria/bibliometrix</a>).</p>
+<pre><code>M &lt;- pmApi2df(D)
+
+str(M)
+
+# &#39;data.frame&#39;: 2918 obs. of  27 variables:
+ # $ AU    : chr  &quot;DU L;LUO S;LIU G;WANG H;ZHENG L;ZHANG Y&quot; &quot;DUAN L;ZHU G&quot; &quot;YANG C;WANG X;TANG X;BAO X;WANG R&quot; &quot;FERHATOGLU SY;YAPICI N&quot; ...
+ # $ AF    : chr  &quot;DU, LIANG;LUO, SHANXIA;LIU, GUINA;WANG, HAO;ZHENG, LINGLI;ZHANG, YONGGANG&quot; &quot;DUAN, LI;ZHU, GANG&quot; &quot;YANG, CHENGXIAN;WANG, XUE;TANG, XIAOLI;BAO, XINJIE;WANG, RENZHI&quot; &quot;FERHATOGLU, S YÄ±LMAZ;YAPICI, N&quot; ...
+ # $ TI    : chr  &quot;THE 100 TOP-CITED STUDIES ABOUT PAIN AND DEPRESSION.&quot; &quot;MAPPING THEME TRENDS AND KNOWLEDGE STRUCTURE OF MAGNETIC RESONANCE IMAGING STUDIES OF SCHIZOPHRENIA: A BIBLIOME&quot;| __truncated__ &quot;RESEARCH TRENDS OF STEM CELLS IN ISCHEMIC STROKE FROM 1999 TO 2018: A BIBLIOMETRIC ANALYSIS.&quot; &quot;A BIBLIOMETRIC ANALYSIS OF THE ARTICLES FOCUSING ON THE SUBJECT OF BRAIN DEATH PUBLISHED IN SCIENTIFIC CITATION&quot;| __truncated__ ...
+ # $ SO    : chr  &quot;FRONTIERS IN PSYCHOLOGY&quot; &quot;FRONTIERS IN PSYCHIATRY&quot; &quot;CLINICAL NEUROLOGY AND NEUROSURGERY&quot; &quot;TRANSPLANTATION PROCEEDINGS&quot; ...
+ # $ SO_CO : chr  &quot;SWITZERLAND&quot; &quot;SWITZERLAND&quot; &quot;NETHERLANDS&quot; &quot;UNITED STATES&quot; ...
+ # $ LA    : chr  &quot;ENG&quot; &quot;ENG&quot; &quot;ENG&quot; &quot;ENG&quot; ...
+ # $ DT    : chr  &quot;JOURNAL ARTICLE&quot; &quot;JOURNAL ARTICLE&quot; &quot;JOURNAL ARTICLE&quot; &quot;JOURNAL ARTICLE&quot; ...
+ # $ DE    : chr  &quot;BIBLIOMETRIC REVIEW;CITATION;CITATION ANALYSIS;DEPRESSION;PAIN;TOP-CITED&quot; &quot;BIBLIOMETRIC ANALYSIS;CO-OCCURRENCE ANALYSIS;MAGNETIC RESONANCE IMAGING;SCHIZOPHRENIA;SOCIAL NETWORK ANALYSIS;S&quot;| __truncated__ &quot;BIBLIOMETRICS;ISCHEMIC STROKE;PUBLICATIONS;STEM CELLS;VOSVIEWER&quot; &quot;&quot; ...
+ # $ ID    : chr  &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...
+ # $ MESH  : chr  &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...
+ # $ AB    : chr  &quot;WITH THE ESTIMATED HIGH PREVALENCE IN THE POPULATION, THE TWO SYMPTOMS OF PAIN AND DEPRESSION THREATEN THE WELL&quot;| __truncated__ &quot;RECENTLY, MAGNETIC RESONANCE IMAGING (MRI) TECHNOLOGY HAS BEEN WIDELY USED TO QUANTITATIVELY ANALYZE BRAIN STRU&quot;| __truncated__ &quot;MANY STUDIES HAVE EVALUATED THE SAFETY AND EFFICACY OF STEM CELLS AS THERAPEUTIC AGENTS FOR ISCHEMIC STROKE. WE&quot;| __truncated__ &quot;ALTHOUGH THE TOPIC OF BRAIN DEATH (BD) HAS BEEN INCREASING IN POPULARITY CONSIDERABLY IN RECENT YEARS BY THE SN&quot;| __truncated__ ...
+ # $ C1    : chr  &quot;DEPARTMENT OF PERIODICAL PRESS AND NATIONAL CLINICAL RESEARCH CENTER FOR GERIATRICS, WEST CHINA HOSPITAL, SICHU&quot;| __truncated__ &quot;DEPARTMENT OF PSYCHIATRY, THE FIRST AFFILIATED HOSPITAL OF CHINA MEDICAL UNIVERSITY, SHENYANG, CHINA.;DEPARTMEN&quot;| __truncated__ &quot;DEPARTMENT OF NEUROSURGERY, PEKING UNION MEDICAL COLLEGE HOSPITAL, PEKING UNION MEDICAL COLLEGE &amp; CHINESE ACADE&quot;| __truncated__ &quot;DEPARTMENT OF ANESTHESIOLOGY AND REANIMATION, UNIVERSITY OF HEALTH SCIENCES DR. SIYAMI ERSEK TRAINING AND RESEA&quot;| __truncated__ ...
+ # $ CR    : chr  &quot;NA&quot; &quot;NA&quot; &quot;NA&quot; &quot;NA&quot; ...
+ # $ TC    : num  0 0 0 0 0 0 0 0 0 0 ...
+ # $ SN    : chr  &quot;1664-1078&quot; &quot;1664-0640&quot; &quot;1872-6968&quot; &quot;1873-2623&quot; ...
+ # $ J9    : chr  &quot;FRONT PSYCHOL&quot; &quot;FRONT PSYCHIATRY&quot; &quot;CLIN NEUROL NEUROSURG&quot; &quot;TRANSPLANT. PROC.&quot; ...
+ # $ JI    : chr  &quot;FRONT PSYCHOL&quot; &quot;FRONT PSYCHIATRY&quot; &quot;CLIN NEUROL NEUROSURG&quot; &quot;TRANSPLANT. PROC.&quot; ...
+ # $ PY    : num  2019 2020 2020 2020 2020 ...
+ # $ VL    : chr  &quot;10&quot; &quot;11&quot; &quot;192&quot; NA ...
+ # $ DI    : chr  &quot;10.3389/fpsyg.2019.03072&quot; &quot;10.3389/fpsyt.2020.00027&quot; &quot;10.1016/j.clineuro.2020.105740&quot; &quot;10.1016/j.transproceed.2020.01.034&quot; ...
+ # $ PG    : chr  &quot;3072&quot; &quot;27&quot; &quot;105740&quot; NA ...
+ # $ UT    : chr  &quot;32116876&quot; &quot;32116844&quot; &quot;32114325&quot; &quot;32111384&quot; ...
+ # $ PMID  : chr  &quot;32116876&quot; &quot;32116844&quot; &quot;32114325&quot; &quot;32111384&quot; ...
+ # $ DB    : chr  &quot;PUBMED&quot; &quot;PUBMED&quot; &quot;PUBMED&quot; &quot;PUBMED&quot; ...
+ # $ AU_UN : chr  &quot;DEPARTMENT OF PERIODICAL PRESS AND NATIONAL CLINICAL RESEARCH CENTER FOR GERIATRICS, WEST CHINA HOSPITAL, SICHU&quot;| __truncated__ &quot;DEPARTMENT OF PSYCHIATRY, THE FIRST AFFILIATED HOSPITAL OF CHINA MEDICAL UNIVERSITY, SHENYANG, CHINA.;DEPARTMEN&quot;| __truncated__ &quot;DEPARTMENT OF NEUROSURGERY, PEKING UNION MEDICAL COLLEGE HOSPITAL, PEKING UNION MEDICAL COLLEGE &amp; CHINESE ACADE&quot;| __truncated__ &quot;DEPARTMENT OF ANESTHESIOLOGY AND REANIMATION, UNIVERSITY OF HEALTH SCIENCES DR. SIYAMI ERSEK TRAINING AND RESEA&quot;| __truncated__ ...
+ # $ AU_CO : chr  &quot;NA&quot; &quot;NA&quot; &quot;NA&quot; &quot;NA&quot; ...
+ # $ AU1_CO: chr  &quot;NA&quot; &quot;NA&quot; &quot;NA&quot; &quot;NA&quot; ...</code></pre>
+<p> </p>
+</div>
+</div>
+<div id="an-overview-to-the-collection-using-bibliometrix" class="section level2">
+<h2>An overview to the collection using bibliometrix</h2>
+<p>Now, we can use some bibliometrix functions to get an overview of the bibliographic collection.</p>
+<p>bibliometrix is an R-tool for quantitative research in scientometrics and bibliometrics that includes all the main bibliometric methods of analysis (<a href="https://CRAN.R-project.org/package=bibliometrix" class="uri">https://CRAN.R-project.org/package=bibliometrix</a>, <a href="https://bibliometrix.org/" class="uri">https://bibliometrix.org/</a>, <a href="https://github.com/massimoaria/bibliometrix" class="uri">https://github.com/massimoaria/bibliometrix</a>).</p>
+<p>First, we install and load the bibliometrix package:</p>
+<pre><code>install.packages(&quot;bibliometrix&quot;)
+library(bibliometrix)</code></pre>
+<p> </p>
+<div id="main-information-about-the-collection" class="section level3">
+<h3>Main information about the collection</h3>
+<p>Then, we use the biblioAnalysis and summary functions to perform a descriptive analysis of the data frame:</p>
+<pre><code>results &lt;- biblioAnalysis(M)
+summary(results)
+
+# Main Information about data
+# 
+#  Documents                             2918 
+#  Sources (Journals, Books, etc.)       1275 
+#  Keywords Plus (ID)                    2245 
+#  Author&#39;s Keywords (DE)                4212 
+#  Period                                2000 - 2020 
+#  Average citations per documents       0 
+# 
+#  Authors                               8854 
+#  Author Appearances                    12928 
+#  Authors of single-authored documents  229 
+#  Authors of multi-authored documents   8625 
+#  Single-authored documents             307 
+# 
+#  Documents per Author                  0.33 
+#  Authors per Document                  3.03 
+#  Co-Authors per Documents              4.43 
+#  Collaboration Index                   3.31 
+#  
+#  Document types                     
+#  BIOGRAPHY                         4 
+#  CASE REPORTS                      2 
+#  COMMENT                           8 
+#  COMPARATIVE STUDY                 97 
+#  EDITORIAL                         2 
+#  ENGLISH ABSTRACT                  1 
+#  EVALUATION STUDY                  19 
+#  HISTORICAL ARTICLE                82 
+#  INTRODUCTORY JOURNAL ARTICLE      2 
+#  JOURNAL ARTICLE                   2694 
+#  LETTER                            3 
+#  REVIEW                            4 
+#  
+# 
+# Annual Scientific Production
+# 
+#  Year    Articles
+#     2000       10
+#     2001        8
+#     2002       10
+#     2003       16
+#     2004       18
+#     2005       27
+#     2006       37
+#     2007       24
+#     2008       43
+#     2009       58
+#     2010       73
+#     2011       93
+#     2012      121
+#     2013      158
+#     2014      172
+#     2015      225
+#     2016      254
+#     2017      276
+#     2018      380
+#     2019      544
+#     2020      159
+# 
+# Annual Percentage Growth Rate 14.83383 
+# 
+# 
+# Most Productive Authors
+# 
+#    Authors        Articles Authors        Articles Fractionalized
+# 1      SWEILEH WM       62     SWEILEH WM                   25.40
+# 2      ZYOUD SH         59     ZYOUD SH                     18.74
+# 3      AL-JABI SW       48     HO YS                        13.89
+# 4      HO YS            34     AL-JABI SW                   13.00
+# 5      YOON DY          27     HUH S                         9.33
+# 6      SAWALHA AF       26     BORNMANN L                    9.29
+# 7      WANG Y           26     SMITH DR                      9.00
+# 8      ZHANG Y          24     ÅŽENEL E                      7.70
+# 9      BORNMANN L       22     YEUNG AWK                     6.22
+# 10     KHOSA F          22     SHAMIM T                      6.00
+# 
+# 
+# Top manuscripts per citations
+# 
+#                                        Paper          TC TCperYear
+# 1  DU L, 2019, FRONT PSYCHOL                           0         0
+# 2  DUAN L, 2020, FRONT PSYCHIATRY                      0         0
+# 3  YANG C, 2020, CLIN NEUROL NEUROSURG                 0         0
+# 4  FERHATOGLU SY, 2020, TRANSPLANT. PROC.              0         0
+# 5  CHEN L, 2020, PHYTOMEDICINE                         0         0
+# 6  KUNZE KN, 2020, AM J SPORTS MED                     0         0
+# 7  CUOCOLO R, 2020, INSIGHTS IMAGING                   0         0
+# 8  WU M, 2020, J. MATERN. FETAL. NEONATAL. MED.        0         0
+# 9  LEE IS, 2020, J PAIN RES                            0         0
+# 10 SANT&#39;ANNA FH, 2020, INT. J. SYST. EVOL. MICROBIOL.  0         0
+# 
+# 
+# Corresponding Author&#39;s Countries
+# 
+#   Country Articles Freq  SCP MCP MCP_Ratio
+# 1      NA     2918    1 2918   0         0
+# 
+# 
+# SCP: Single Country Publications
+# 
+# MCP: Multiple Country Publications
+# 
+# 
+# Total Citations per Country
+# 
+#   Country      Total Citations Average Article Citations
+# 1           NA               0                         0
+# 
+# 
+# Most Relevant Sources
+# 
+#                                                       Sources        Articles
+# 1  PLOS ONE                                                               106
+# 2  SCIENTOMETRICS                                                          67
+# 3  WORLD NEUROSURGERY                                                      55
+# 4  ENVIRONMENTAL SCIENCE AND POLLUTION RESEARCH INTERNATIONAL              36
+# 5  INTERNATIONAL JOURNAL OF ENVIRONMENTAL RESEARCH AND PUBLIC HEALTH       34
+# 6  MEDICINE                                                                31
+# 7  NEURAL REGENERATION RESEARCH                                            29
+# 8  BMJ OPEN                                                                26
+# 9  JOURNAL OF THE MEDICAL LIBRARY ASSOCIATION : JMLA                       26
+# 10 PEERJ                                                                   25
+# 
+# 
+# Most Relevant Keywords
+# 
+#    Author Keywords (DE)      Articles Keywords-Plus (ID)     Articles
+# 1      BIBLIOMETRICS              667  BIBLIOMETRICS             1545
+# 2      BIBLIOMETRIC ANALYSIS      331  HUMANS                    1518
+# 3      BIBLIOMETRIC               172  PERIODICALS AS TOPIC       592
+# 4      CITATION ANALYSIS          123  BIOMEDICAL RESEARCH        483
+# 5      H INDEX                     97  PUBLISHING                 419
+# 6      PUBLICATIONS                84  JOURNAL IMPACT FACTOR      323
+# 7      CITATIONS                   81  PUBLICATIONS               252
+# 8      CITATION                    69  RESEARCH                   252
+# 9      WEB OF SCIENCE              66  UNITED STATES              219
+# 10     SCIENTOMETRICS              64  FEMALE                     174</code></pre>
+<p>```</p>
+</div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

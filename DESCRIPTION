@@ -17,5 +17,6 @@ Imports:
     rentrez,
     XML
 Suggests: 
-    bibliometrix
+    bibliometrix, knitr, rmarkdown
 RoxygenNote: 7.0.2
+VignetteBuilder: knitr

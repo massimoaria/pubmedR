@@ -49,7 +49,18 @@ The workflow mainly consists of four steps:
 
 4. Convert the download object into a "readable" and and "usable" format
 
+By default, the access to NCBI API system is free and does not necessarily require an "API key". In this case, NCBI limits users to making only 3 requests per second. Users who register for an “API key” are able to make up to ten requests per second. 
 
+Obtaing a key is very simple, you just need to register for [“my ncbi account”](https://www.ncbi.nlm.nih.gov/account/) then click on a button in the ["account settings page"](https://www.ncbi.nlm.nih.gov/account/settings/).
+
+Once you have an API key, set the argument api_key="*your API key*" otherwise api_key="*NULL*":
+``` r
+# if you have got an API key
+api_key <- "your API key"
+
+# if you haven't got an API key
+api_key = NULL
+```
 
 
 ## First step: Write a query
@@ -98,7 +109,7 @@ We could decide to change the query or continue to download the whole collection
 Image, we decided to download the whole collection composed by 2921 documents:
 
 ``` r
-D <- pmApiRequest(query = query, limit = res$total_count, api_key = NULL)
+D <- pmApiRequest(query = query, limit = res$total_count, api_key = api_key)
 
 # Documents  200  of  2921 
 # Documents  400  of  2921 

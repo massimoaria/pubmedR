@@ -34,8 +34,8 @@ pmApi2df <- function(P, format="bibliometrix"){
     ### Data Conversion
 
     df <- data.frame(AU=rep(NA,n), AF="NA",TI="NA", SO="NA", SO_CO=NA, LA=NA, DT=NA,DE=NA,ID=NA,MESH=NA,AB="NA",C1=NA,CR="NA",
-                     TC=NA, SN=NA, J9=NA, JI=NA, PY=NA, VL=NA, DI=NA, PG=NA, UT=NA, PMID=NA, DB="PUBMED",
-                     AU_UN=NA, stringsAsFactors = FALSE)
+                     TC=NA, SN=NA, J9=NA, JI=NA, PY=NA, PY_IS=NA, VL=NA, DI=NA, PG=NA, GRANT_ID=NA, GRANT_ORG=NA, UT=NA, PMID=NA,
+                     DB="PUBMED", AU_UN=NA, stringsAsFactors = FALSE)
 
     pb <- utils::txtProgressBar(min = 1, max = n, initial = 1, char = "=")
 
@@ -58,7 +58,9 @@ pmApi2df <- function(P, format="bibliometrix"){
         df$TI[i] <- a["MedlineCitation.Article.ArticleTitle"]
 
         ## Publication Year
-        df$PY[i] <- a["MedlineCitation.Article.Journal.JournalIssue.PubDate.Year"]
+        ind <- which(items == "PubmedData.History.PubMedPubDate.Year")
+        df$PY[i] <- min(as.numeric(a[ind]),na.rm = TRUE)
+        df$PY_IS[i] <- a["MedlineCitation.Article.Journal.JournalIssue.PubDate.Year"]
 
         ## Co-Authors
         AU_last_ind <- which(items == "MedlineCitation.Article.AuthorList.Author.LastName")
@@ -124,6 +126,11 @@ pmApi2df <- function(P, format="bibliometrix"){
         ## ID
         df$UT[i] <- df$PMID[i] <- a["MedlineCitation.PMID.text"]
 
+        ## grants
+        GR_ID <- which(items %in% "MedlineCitation.Article.GrantList.Grant.GrantID")
+        df$GRANT_ID[i] <- paste(a[GR_ID], collapse=";")
+        GR_ORG <- which(items %in% "MedlineCitation.Article.GrantList.Grant.Agency")
+        df$GRANT_ORG[i] <- paste(a[GR_ORG],collapse=";")
 
     }
 
