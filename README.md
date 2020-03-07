@@ -6,7 +6,7 @@ pubmedR
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of pubmedR is to gather metadata about publications, grants and clinical trials from PubMed database using NCBI APIs.
+The goal of pubmedR is to gather metadata about publications, grants and clinical trials from PubMed database using NCBI REST APIs.
 
 
 ## Installation
