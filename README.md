@@ -204,8 +204,12 @@ library(bibliometrix)
 ### Main information about the collection
 
 Then, we use the biblioAnalysis and summary functions to perform a descriptive analysis of the data frame:
+Then, we add some metadata to the pubmed collection, and we use the biblioAnalysis and summary functions to perform a descriptive analysis of the data frame:
 
 ``` r
+M <- metaTagExtraction(M, "SR")
+row.names(M) <- M$SR
+
 results <- biblioAnalysis(M)
 summary(results)
 

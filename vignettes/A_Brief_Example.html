@@ -217,14 +217,22 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <div id="an-r-package-to-gather-bibliographic-data-from-pubmed." class="section level2">
 <h2>An R-package to gather bibliographic data from PubMed.</h2>
-<p><strong>by Massimo Aria</strong></p>
 <p> </p>
-<pre><code>The goal of pubmedR is to gather metadata about publications, grants and clinical trials from PubMed database using NCBI APIs.</code></pre>
+<pre><code>The goal of pubmedR is to gather metadata about publications, grants and clinical trials from PubMed database using NCBI REST APIs.</code></pre>
 <!-- badges: start -->
 <!-- badges: end -->
 <p> </p>
 <p><em><a href="http://github.com/massimoaria/pubmedR" class="uri">http://github.com/massimoaria/pubmedR</a></em></p>
-<p><em>Latest version: 0.0.1, 2020-03-07</em></p>
+<p><em>Latest version: 0.0.1, 2020-03-17</em></p>
+<p> </p>
+<p><strong>by Massimo Aria</strong></p>
+<p>Full Professor in Social Statistics</p>
+<p>PhD in Computational Statistics</p>
+<p>Laboratory and Research Group STAD Statistics, Technology, Data Analysis</p>
+<p>Department of Economics and Statistics</p>
+<p>University of Naples Federico II</p>
+<p>email <a href="mailto:aria@unina.it" class="email">aria@unina.it</a></p>
+<p><a href="http://www.massimoaria.com" class="uri">http://www.massimoaria.com</a></p>
 <p> </p>
 </div>
 <div id="installation" class="section level2">
@@ -372,8 +380,11 @@ library(bibliometrix)</code></pre>
 <p> </p>
 <div id="main-information-about-the-collection" class="section level3">
 <h3>Main information about the collection</h3>
-<p>Then, we use the biblioAnalysis and summary functions to perform a descriptive analysis of the data frame:</p>
-<pre><code>results &lt;- biblioAnalysis(M)
+<p>Then, we add some metadata to the pubmed collection, and we use the biblioAnalysis and summary functions to perform a descriptive analysis of the data frame:</p>
+<pre><code>M &lt;- metaTagExtraction(M, &quot;SR&quot;)
+row.names(M) &lt;- M$SR
+
+results &lt;- biblioAnalysis(M)
 summary(results)
 
 # Main Information about data

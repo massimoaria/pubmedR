@@ -8,8 +8,6 @@ vignette: >
 ---
 ## An R-package to gather bibliographic data from PubMed. 
 
-**by Massimo Aria**
-
 &nbsp;
 
     The goal of pubmedR is to gather metadata about publications, grants and clinical trials from PubMed database using NCBI REST APIs.
@@ -23,6 +21,24 @@ vignette: >
 *http://github.com/massimoaria/pubmedR*
 
 *Latest version: `r packageVersion("pubmedR")`, `r Sys.Date()`*
+
+&nbsp; 
+
+**by Massimo Aria**
+
+Full Professor in Social Statistics 
+
+PhD in Computational Statistics
+
+Laboratory and Research Group STAD Statistics, Technology, Data Analysis
+
+Department of Economics and Statistics 
+
+University of Naples Federico II
+
+email aria@unina.it
+
+http://www.massimoaria.com
 
 &nbsp; 
 
@@ -227,9 +243,11 @@ First, we install and load the bibliometrix package:
 
 ### Main information about the collection
 
-Then, we use the biblioAnalysis and summary functions to perform a descriptive analysis of the data frame:
+Then, we add some metadata to the pubmed collection, and we use the biblioAnalysis and summary functions to perform a descriptive analysis of the data frame:
 
-
+    M <- metaTagExtraction(M, "SR")
+    row.names(M) <- M$SR
+    
     results <- biblioAnalysis(M)
     summary(results)
 
