@@ -26,9 +26,11 @@ It counts the number of documents that a query returns from the NCBI PubMed data
 }
 \examples{
 
-# query <- "bibliometric*[Title/Abstract] AND english[LA]
-#           AND Journal Article[PT] AND 2000:2020[DP]"
-# D <- pmQueryTotalCount(query = query, api_key = NULL)
+\donttest{
+query <- "bibliometric*[Title/Abstract] AND english[LA]
+           AND Journal Article[PT] AND 2000:2020[DP]"
+D <- pmQueryTotalCount(query = query, api_key = NULL)
+}
 
 }
 \seealso{

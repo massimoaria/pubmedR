@@ -20,11 +20,14 @@
 #' To obtain a free access to NCBI API, please visit: \href{https://www.ncbi.nlm.nih.gov/pmc/tools/developers/}{https://www.ncbi.nlm.nih.gov/pmc/tools/developers/}
 #'
 #' To obtain more information about how to write a NCBI search query, please visit: \href{https://pubmed.ncbi.nlm.nih.gov/help/#search-tags}{https://pubmed.ncbi.nlm.nih.gov/help/#search-tags}
+#'
 #' @examples
 #'
-#' # query <- query <- "bibliometric*[Title/Abstract] AND english[LA]
-#' #                    AND Journal Article[PT] AND 2000:2020[DP]"
-#' # D <- pmApiRequest(query = query, limit = 1000, api_key = NULL)
+#' \donttest{
+#' query <- query <- "bibliometric*[Title/Abstract] AND english[LA]
+#'                     AND Journal Article[PT] AND 2000:2020[DP]"
+#'  D <- pmApiRequest(query = query, limit = 100, api_key = NULL)
+#' }
 #'
 #' @seealso \code{\link{pmQueryTotalCount}}
 #' @seealso \code{\link{pmApi2df}}

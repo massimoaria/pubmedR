@@ -16,9 +16,12 @@
 #'
 #' # Example: Querying a collection of publications
 #'
-#' # query <- "bibliometric*[Title/Abstract] AND english[LA] AND Journal Article[PT] AND 2000:2020[DP]"
-#' # D <- pmApiRequest(query = query, limit = 1000, api_key = NULL)
-#' # M <- pmApi2df(D)
+#' \donttest{
+#' query <- "bibliometric*[Title/Abstract] AND english[LA]
+#'          AND Journal Article[PT] AND 2000:2020[DP]"
+#' D <- pmApiRequest(query = query, limit = 100, api_key = NULL)
+#' M <- pmApi2df(D)
+#' }
 #'
 #' @seealso \code{\link{pmApiRequest}}
 #' @seealso \code{\link{pmQueryTotalCount}}

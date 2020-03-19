@@ -36,9 +36,11 @@ Official API documentation is \href{https://www.ncbi.nlm.nih.gov/books/NBK25500/
 }
 \examples{
 
-# query <- query <- "bibliometric*[Title/Abstract] AND english[LA]
-#                    AND Journal Article[PT] AND 2000:2020[DP]"
-# D <- pmApiRequest(query = query, limit = 1000, api_key = NULL)
+\donttest{
+query <- query <- "bibliometric*[Title/Abstract] AND english[LA]
+                    AND Journal Article[PT] AND 2000:2020[DP]"
+ D <- pmApiRequest(query = query, limit = 100, api_key = NULL)
+}
 
 }
 \seealso{
