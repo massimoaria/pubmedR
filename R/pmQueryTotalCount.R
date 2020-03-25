@@ -28,6 +28,17 @@
 #'
 #' @export
 pmQueryTotalCount <- function(query, api_key = NULL) {
+  terms <- unlist(lapply(strsplit(query,"\\["), function(l) l[[1]]))
+  if (terms %in% c(""," ")){
+    results <-
+      list(
+        total_count = 0,
+        query_translation = "Not valid search terms",
+        web_history = NA
+      )
+    return(results)
+  }
+
   d_search <- entrez_search(
     db = "pubmed",
     term = query ,
@@ -42,4 +53,5 @@ pmQueryTotalCount <- function(query, api_key = NULL) {
       query_translation = d_search$QueryTranslation,
       web_history = d_search$web_history
     )
+  return(results)
 }
