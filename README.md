@@ -20,6 +20,7 @@ install.packages("devtools")
 devtools::install_github("massimoaria/pubmedR")
 ```
 
+
 You can install the released version of pubmedR from [CRAN](https://CRAN.R-project.org) with:
 
 ``` r
