@@ -3,8 +3,10 @@ pubmedR
 
 ## An R package to gather bibliographic data from PubMed. 
 
-<!-- badges: start -->
-<!-- badges: end -->
+[![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
+[![Build Status](https://www.bibliometrix.org/passing.png)](https://github.com/massimoaria/pubmedR)
+[![rstudio mirror downloads](https://cranlogs.r-pkg.org/badges/pubmedR)](https://github.com/metacran/cranlogs.app)
+[![cran version](http://www.r-pkg.org/badges/version/pubmedR)](https://cran.r-project.org/package=pubmedR)
 
 The goal of pubmedR is to gather metadata about publications, grants and clinical trials from PubMed database using NCBI REST APIs.
 
@@ -21,8 +23,7 @@ devtools::install_github("massimoaria/pubmedR")
 You can install the released version of pubmedR from [CRAN](https://CRAN.R-project.org) with:
 
 ``` r
-# not yet on CRAN
-# install.packages("pubmedR")
+install.packages("pubmedR")
 ```
 
 
