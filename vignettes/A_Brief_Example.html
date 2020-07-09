@@ -223,7 +223,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <!-- badges: end -->
 <p> </p>
 <p><em><a href="http://github.com/massimoaria/pubmedR" class="uri">http://github.com/massimoaria/pubmedR</a></em></p>
-<p><em>Latest version: 0.0.2, 2020-04-03</em></p>
+<p><em>Latest version: 0.0.2, 2020-07-09</em></p>
 <p> </p>
 <p><strong>by Massimo Aria</strong></p>
 <p>Full Professor in Social Statistics</p>
@@ -381,7 +381,7 @@ library(bibliometrix)</code></pre>
 <div id="main-information-about-the-collection" class="section level3">
 <h3>Main information about the collection</h3>
 <p>Then, we add some metadata to the pubmed collection, and we use the biblioAnalysis and summary functions to perform a descriptive analysis of the data frame:</p>
-<pre><code>M &lt;- convert2df(M, dbsource = &quot;pubmed&quot;, format = &quot;api&quot;)
+<pre><code>M &lt;- convert2df(D, dbsource = &quot;pubmed&quot;, format = &quot;api&quot;)
 
 results &lt;- biblioAnalysis(M)
 summary(results)

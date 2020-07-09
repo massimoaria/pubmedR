@@ -61,8 +61,13 @@ pmApi2df <- function(P, format="bibliometrix"){
         df$TI[i] <- a["MedlineCitation.Article.ArticleTitle"]
 
         ## Publication Year
+
         ind <- which(items == "PubmedData.History.PubMedPubDate.Year")
-        df$PY[i] <- min(as.numeric(a[ind]),na.rm = TRUE)
+
+        if(length(ind)>0){
+          df$PY[i] <- min(as.numeric(a[ind]),na.rm = TRUE)
+        }else{df$PY[i]=NA}
+
         df$PY_IS[i] <- a["MedlineCitation.Article.Journal.JournalIssue.PubDate.Year"]
 
         ## Co-Authors
