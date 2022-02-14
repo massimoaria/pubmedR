@@ -1,3 +1,7 @@
+# pubmed 0.04
+
+* fixed issue about entrez_fetch restart argument
+
 # pubmedR 0.0.2
 
 * Fixed issue in publication year field

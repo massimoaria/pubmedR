@@ -46,12 +46,12 @@ pmApiRequest <- function(query, limit, api_key=NULL){
   step <- min(limit, step)
   metadata <- list()
   stop <- FALSE
-  s <- 1
+  s <- 0
 
 
   ## download metadata
   while(!isTRUE(stop)) {
-    cat("Documents ",s+step - 1," of ", n,"\n")
+    cat("Documents ",s+step," of ", n,"\n")
     multi_summs <-
       entrez_fetch(
         db = "pubmed",
@@ -70,7 +70,7 @@ pmApiRequest <- function(query, limit, api_key=NULL){
     } else{
       s <- s + step
       if ((s + step) > limit) {
-        step <- (n - s + 1)
+        step <- (n - s)
       }
 
     }

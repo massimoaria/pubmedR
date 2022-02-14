@@ -1,6 +1,6 @@
 Package: pubmedR
 Title: Gathering Metadata About Publications, Grants, Clinical Trials from 'PubMed' Database
-Version: 0.0.2
+Version: 0.0.4
 Authors@R: 
     person(given = "Massimo",
            family = "Aria",
