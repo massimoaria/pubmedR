@@ -2,6 +2,11 @@
 
 export(pmApi2df)
 export(pmApiRequest)
+export(pmCitedBy)
+export(pmEnrichCitations)
+export(pmFetchById)
+export(pmQueryBuild)
 export(pmQueryTotalCount)
+export(pmReferences)
 import(XML)
 import(rentrez)

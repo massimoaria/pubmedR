@@ -3,7 +3,7 @@
 #' It converts PubMed data, downloaded using Entrez API, into a dataframe
 #'
 #' @param P is a list following the xml PubMed structure, downloaded using the function \code{pmApiRequest}.
-#' @param format is a character. If \code{format = "bibliometrix"} data will be converted in the bibliometrix complatible data format.
+#' @param format is a character. If \code{format = "bibliometrix"} data will be converted in the bibliometrix compatible data format.
 #' If \code{format = "raw"} data will save in a data frame without any other data editing procedure.
 #'
 #' @return a dataframe containing bibliographic records.
@@ -27,165 +27,183 @@
 #' @seealso \code{\link{pmQueryTotalCount}}
 #'
 #' @export
-pmApi2df <- function(P, format="bibliometrix"){
+pmApi2df <- function(P, format = "bibliometrix") {
 
-    P <- P$data
+  P <- P$data
 
-    n <- length(P)
+  n <- length(P)
 
+  if (n == 0) {
+    message("No records to convert.")
+    return(data.frame())
+  }
 
-    ### Data Conversion
+  ### Data Conversion
+  df <- data.frame(
+    AU = rep(NA_character_, n),
+    AF = NA_character_,
+    TI = NA_character_,
+    SO = NA_character_,
+    SO_CO = NA_character_,
+    LA = NA_character_,
+    DT = NA_character_,
+    DE = NA_character_,
+    ID = NA_character_,
+    MESH = NA_character_,
+    AB = NA_character_,
+    C1 = NA_character_,
+    CR = NA_character_,
+    TC = 0,
+    SN = NA_character_,
+    J9 = NA_character_,
+    JI = NA_character_,
+    PY = NA_integer_,
+    PY_IS = NA_character_,
+    VL = NA_character_,
+    DI = NA_character_,
+    PG = NA_character_,
+    GRANT_ID = NA_character_,
+    GRANT_ORG = NA_character_,
+    UT = NA_character_,
+    PMID = NA_character_,
+    DB = "PUBMED",
+    AU_UN = NA_character_,
+    stringsAsFactors = FALSE
+  )
 
-    df <- data.frame(AU=rep(NA,n), AF="NA",TI="NA", SO="NA", SO_CO=NA, LA=NA, DT=NA,DE=NA,ID=NA,MESH=NA,AB="NA",C1=NA,CR="NA",
-                     TC=NA, SN=NA, J9=NA, JI=NA, PY=NA, PY_IS=NA, VL=NA, DI=NA, PG=NA, GRANT_ID=NA, GRANT_ORG=NA, UT=NA, PMID=NA,
-                     DB="PUBMED", AU_UN=NA, stringsAsFactors = FALSE)
+  pb <- utils::txtProgressBar(min = 1, max = n, initial = 1, char = "=", style = 3)
 
-    pb <- utils::txtProgressBar(min = 1, max = n, initial = 1, char = "=")
+  for (i in 1:n) {
+    utils::setTxtProgressBar(pb, i)
 
-    for (i in 1:n) {
-      #if (i%%100==0 | i==n) cat("Documents converted  ",i,"of",n, "\n")
-      #print(i)
-      utils::setTxtProgressBar(pb, i)
+    a <- list2char(P[[i]])
+    items <- names(a)
 
-        a <- list2char(P[[i]])
+    ## Language
+    df$LA[i] <- a["MedlineCitation.Article.Language"]
 
-        items<- names(a)
+    ## Document Type
+    df$DT[i] <- a["MedlineCitation.Article.PublicationTypeList.PublicationType.text"]
 
-        ## Language
-        df$LA[i] <- a["MedlineCitation.Article.Language"]
+    ## Title
+    df$TI[i] <- a["MedlineCitation.Article.ArticleTitle"]
 
-        ## Document Type
-        df$DT[i] <- a["MedlineCitation.Article.PublicationTypeList.PublicationType.text"]
+    ## Publication Year
+    ind <- which(items == "PubmedData.History.PubMedPubDate.Year")
+    if (length(ind) > 0) {
+      df$PY[i] <- min(as.numeric(a[ind]), na.rm = TRUE)
+    }
+    df$PY_IS[i] <- a["MedlineCitation.Article.Journal.JournalIssue.PubDate.Year"]
 
-        ## Title
-        df$TI[i] <- a["MedlineCitation.Article.ArticleTitle"]
+    ## Authors
+    AU_last_ind <- which(items == "MedlineCitation.Article.AuthorList.Author.LastName")
+    AU_first_ind <- which(items == "MedlineCitation.Article.AuthorList.Author.ForeName")
+    AU_init_ind <- which(items == "MedlineCitation.Article.AuthorList.Author.Initials")
 
-        ## Publication Year
-
-        ind <- which(items == "PubmedData.History.PubMedPubDate.Year")
-
-        if(length(ind)>0){
-          df$PY[i] <- min(as.numeric(a[ind]),na.rm = TRUE)
-        }else{df$PY[i]=NA}
-
-        df$PY_IS[i] <- a["MedlineCitation.Article.Journal.JournalIssue.PubDate.Year"]
-
-        ## Co-Authors
-        AU_last_ind <- which(items == "MedlineCitation.Article.AuthorList.Author.LastName")
-        AU_first_ind <- which(items == "MedlineCitation.Article.AuthorList.Author.ForeName")
-        AU_init_ind <- which(items == "MedlineCitation.Article.AuthorList.Author.Initials")
-        nameAF <-  paste(a[AU_last_ind], a[AU_first_ind], sep=", ")
-        nameAU <-  paste(a[AU_last_ind], a[AU_init_ind], sep=" ")
-        df$AF[i] <- paste(nameAF, collapse = ";")
-        df$AU[i] <- paste(nameAU, collapse = ";")
-
-        ## Affiliations
-        Aff_name_ind <- which(items == "MedlineCitation.Article.AuthorList.Author.AffiliationInfo.Affiliation")
-        Affiliations <- a[Aff_name_ind]
-
-        Affiliations <- lapply(Affiliations,function(l){
-          l <- unlist(strsplit(l,", "))
-          l <- paste(l[!(regexpr("\\@",l)>-1)],collapse=", ")
-        })
-        df$C1[i] <- df$AU_UN[i] <- paste(Affiliations, collapse=";")
-
-        ## Keywords and MeSH
-        DE_ind <- which(items == "MedlineCitation.KeywordList.Keyword.text")
-        df$DE[i] <- paste(a[DE_ind],collapse=";")
-        ID_ind <- which(items == "MedlineCitation.MeshHeadingList.MeshHeading.DescriptorName.text")
-        df$ID[i] <- df$MESH[i] <- paste(a[ID_ind],collapse=";")
-
-        ## Abstract
-        ind <- which(items %in% "MedlineCitation.Article.Abstract.AbstractText.text" )
-        if (length(ind)>0){
-          df$AB[i] <- paste(a[ind],collapse=" ")
-        }else{
-          ind <- which(items %in% "MedlineCitation.Article.Abstract.AbstractText")
-          if (length(ind)>0){
-            df$AB[i] <- a[ind]
-          }
-        }
-
-        ## Journals
-        df$SO[i] <- a["MedlineCitation.Article.Journal.Title"]
-
-        df$JI[i] <- df$J9[i] <- a["MedlineCitation.Article.Journal.ISOAbbreviation"]
-
-        df$SO_CO[i] <- a["MedlineCitation.MedlineJournalInfo.Country"]
-
-        ## Doi
-        doi_ind <- which(items == "PubmedData.ArticleIdList.ArticleId..attrs.IdType" )
-
-        ind <- which(a[doi_ind]=="doi")
-        if (length(ind)>0){
-          doi_ind <- doi_ind[ind]-1
-          df$DI[i] <- a[doi_ind]
-        }
-
-        ## ISSN
-        df$SN[i] <- a["MedlineCitation.Article.Journal.ISSN.text"]
-
-        ## Pages
-        df$PG[i] <- a["MedlineCitation.Article.Pagination.MedlinePgn"]
-
-        ## Volume
-        df$VL[i] <- a["MedlineCitation.Article.Journal.JournalIssue.Volume"]
-
-        ## ID
-        df$UT[i] <- df$PMID[i] <- a["MedlineCitation.PMID.text"]
-
-        ## grants
-        GR_ID <- which(items %in% "MedlineCitation.Article.GrantList.Grant.GrantID")
-        df$GRANT_ID[i] <- paste(a[GR_ID], collapse=";")
-        GR_ORG <- which(items %in% "MedlineCitation.Article.GrantList.Grant.Agency")
-        df$GRANT_ORG[i] <- paste(a[GR_ORG],collapse=";")
-
+    if (length(AU_last_ind) > 0) {
+      nameAF <- paste(a[AU_last_ind], a[AU_first_ind], sep = ", ")
+      nameAU <- paste(a[AU_last_ind], a[AU_init_ind], sep = " ")
+      df$AF[i] <- paste(nameAF, collapse = ";")
+      df$AU[i] <- paste(nameAU, collapse = ";")
     }
 
+    ## Affiliations - extract all author affiliations
+    Aff_name_ind <- which(items == "MedlineCitation.Article.AuthorList.Author.AffiliationInfo.Affiliation")
+    if (length(Aff_name_ind) > 0) {
+      Affiliations <- a[Aff_name_ind]
 
-    if (format == "bibliometrix") {
-      DI <- df$DI
-      df <- data.frame(lapply(df, toupper), stringsAsFactors = FALSE)
-      df$DI <- DI
-      df$AU_CO="NA"
-      df$AU1_CO="NA"
+      ## Remove email addresses from affiliations
+      Affiliations <- vapply(Affiliations, function(l) {
+        parts <- unlist(strsplit(l, ", "))
+        paste(parts[!grepl("@", parts, fixed = TRUE)], collapse = ", ")
+      }, character(1), USE.NAMES = FALSE)
+
+      ## Remove empty affiliations
+      Affiliations <- Affiliations[nzchar(trimws(Affiliations))]
+
+      ## Unique affiliations for C1
+      unique_aff <- unique(Affiliations)
+      df$C1[i] <- paste(unique_aff, collapse = ";")
+      df$AU_UN[i] <- df$C1[i]
     }
 
-    ### PY
-    df$PY <- as.numeric(df$PY)
+    ## Keywords and MeSH
+    DE_ind <- which(items == "MedlineCitation.KeywordList.Keyword.text")
+    if (length(DE_ind) > 0) {
+      df$DE[i] <- paste(a[DE_ind], collapse = ";")
+    }
 
-    ### TC and TCR
-    df$TC <- as.numeric(df$TC)
-    df$TC[is.na(df$TC)] <- 0
+    ID_ind <- which(items == "MedlineCitation.MeshHeadingList.MeshHeading.DescriptorName.text")
+    if (length(ID_ind) > 0) {
+      df$ID[i] <- df$MESH[i] <- paste(a[ID_ind], collapse = ";")
+    }
 
-    ###  remove empy rows
-    df=df[!is.na(df$DT),]
+    ## Abstract - handle structured abstracts
+    ind <- which(items == "MedlineCitation.Article.Abstract.AbstractText.text")
+    if (length(ind) > 0) {
+      df$AB[i] <- paste(a[ind], collapse = " ")
+    } else {
+      ind <- which(items == "MedlineCitation.Article.Abstract.AbstractText")
+      if (length(ind) > 0) {
+        df$AB[i] <- paste(a[ind], collapse = " ")
+      }
+    }
 
-    ### To Add in convert2df
-    ### SR field creation
-    #suppressWarnings(df <- metaTagExtraction(df, Field="SR"))
+    ## Journal
+    df$SO[i] <- a["MedlineCitation.Article.Journal.Title"]
+    df$JI[i] <- df$J9[i] <- a["MedlineCitation.Article.Journal.ISOAbbreviation"]
+    df$SO_CO[i] <- a["MedlineCitation.MedlineJournalInfo.Country"]
 
-    #row.names(df) <- df$SR
-    close(pb)
+    ## DOI
+    doi_ind <- which(items == "PubmedData.ArticleIdList.ArticleId..attrs.IdType")
+    ind <- which(a[doi_ind] == "doi")
+    if (length(ind) > 0) {
+      doi_val_ind <- doi_ind[ind] - 1
+      df$DI[i] <- a[doi_val_ind]
+    }
 
-    return(df)
+    ## ISSN
+    df$SN[i] <- a["MedlineCitation.Article.Journal.ISSN.text"]
 
-}
+    ## Pages
+    df$PG[i] <- a["MedlineCitation.Article.Pagination.MedlinePgn"]
 
+    ## Volume
+    df$VL[i] <- a["MedlineCitation.Article.Journal.JournalIssue.Volume"]
 
-#### function list2char ####
-list2char <- function (x, use.names = TRUE, classes = "ANY")
-{
-  lung <- sum(rapply(x, function(x) 1L, classes = classes))
-  Ch <- vector("list", lung)
-  i <- 0L
-  items <- rapply(x, function(x) {
-    i <<- i + 1L
-    Ch[[i]] <<- x
-    TRUE
-  }, classes = classes)
-  if (use.names && !is.null(nm <- names(items)))
-    names(Ch) <- nm
-  Ch <- unlist(Ch)
-  return(Ch)
+    ## PMID
+    df$UT[i] <- df$PMID[i] <- a["MedlineCitation.PMID.text"]
+
+    ## Grants
+    GR_ID <- which(items == "MedlineCitation.Article.GrantList.Grant.GrantID")
+    if (length(GR_ID) > 0) {
+      df$GRANT_ID[i] <- paste(a[GR_ID], collapse = ";")
+    }
+    GR_ORG <- which(items == "MedlineCitation.Article.GrantList.Grant.Agency")
+    if (length(GR_ORG) > 0) {
+      df$GRANT_ORG[i] <- paste(a[GR_ORG], collapse = ";")
+    }
+  }
+
+  close(pb)
+
+  if (format == "bibliometrix") {
+    DI <- df$DI
+    df <- data.frame(lapply(df, toupper), stringsAsFactors = FALSE)
+    df$DI <- DI
+    df$AU_CO <- NA_character_
+    df$AU1_CO <- NA_character_
+  }
+
+  ### PY
+  df$PY <- as.numeric(df$PY)
+
+  ### TC
+  df$TC <- as.numeric(df$TC)
+  df$TC[is.na(df$TC)] <- 0
+
+  ### Remove empty rows (no Document Type)
+  df <- df[!is.na(df$DT), ]
+
+  return(df)
 }

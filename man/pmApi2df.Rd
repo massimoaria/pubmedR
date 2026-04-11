@@ -9,7 +9,7 @@ pmApi2df(P, format = "bibliometrix")
 \arguments{
 \item{P}{is a list following the xml PubMed structure, downloaded using the function \code{pmApiRequest}.}
 
-\item{format}{is a character. If \code{format = "bibliometrix"} data will be converted in the bibliometrix complatible data format.
+\item{format}{is a character. If \code{format = "bibliometrix"} data will be converted in the bibliometrix compatible data format.
 If \code{format = "raw"} data will save in a data frame without any other data editing procedure.}
 }
 \value{

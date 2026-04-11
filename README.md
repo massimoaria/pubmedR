@@ -1,357 +1,416 @@
-pubmedR
-====================================
 
-## An R package to gather bibliographic data from PubMed. 
+<!-- README.md is generated from README.Rmd. Please edit that file -->
 
-[![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
-[![Build Status](https://www.bibliometrix.org/passing.png)](https://github.com/massimoaria/pubmedR)
-[![rstudio mirror downloads](https://cranlogs.r-pkg.org/badges/pubmedR)](https://github.com/metacran/cranlogs.app)
-[![cran version](http://www.r-pkg.org/badges/version/pubmedR)](https://cran.r-project.org/package=pubmedR)
+# pubmedR <img src="man/figures/logo.png" align="right" height="139" />
 
-The goal of pubmedR is to gather metadata about publications, grants and clinical trials from PubMed database using NCBI REST APIs.
+<!-- badges: start -->
 
+[![CRAN
+status](https://www.r-pkg.org/badges/version/pubmedR)](https://CRAN.R-project.org/package=pubmedR)
+[![CRAN
+downloads](https://cranlogs.r-pkg.org/badges/pubmedR)](https://CRAN.R-project.org/package=pubmedR)
+[![Project Status:
+Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![R-CMD-check](https://github.com/massimoaria/pubmedR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/massimoaria/pubmedR/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
+
+**pubmedR** is an R package for gathering bibliographic metadata from
+the [PubMed](https://pubmed.ncbi.nlm.nih.gov/) database using [NCBI
+Entrez](https://www.ncbi.nlm.nih.gov/books/NBK25500/) REST APIs.
+
+It provides a complete toolkit to **search**, **download**, **convert**,
+and **enrich** PubMed records, with full compatibility with the
+[bibliometrix](https://www.bibliometrix.org) R package for bibliometric
+analysis.
+
+## Core Functions
+
+| Function              | Description                                        |
+|-----------------------|----------------------------------------------------|
+| `pmQueryBuild()`      | Build a PubMed query programmatically              |
+| `pmQueryTotalCount()` | Count the number of records matching a query       |
+| `pmApiRequest()`      | Download bibliographic metadata from PubMed        |
+| `pmApi2df()`          | Convert downloaded XML data into a data frame      |
+| `pmFetchById()`       | Download records by a list of PMIDs                |
+| `pmCitedBy()`         | Find articles that cite a given article            |
+| `pmReferences()`      | Find references cited by a given article           |
+| `pmEnrichCitations()` | Add citation counts and references to a data frame |
 
 ## Installation
 
-You can install the developer version of the pubmedR from [GitHub](https://github.com) with:
-
-``` r
-install.packages("devtools")
-devtools::install_github("massimoaria/pubmedR")
-```
-
-
-You can install the released version of pubmedR from [CRAN](https://CRAN.R-project.org) with:
+You can install the released version of pubmedR from
+[CRAN](https://CRAN.R-project.org) with:
 
 ``` r
 install.packages("pubmedR")
 ```
 
+Or install the development version from
+[GitHub](https://github.com/massimoaria/pubmedR):
 
+``` r
+# install.packages("devtools")
+devtools::install_github("massimoaria/pubmedR")
+```
 
-## Load the package
+## API Key Setup
+
+Access to the NCBI PubMed API is free and does not necessarily require
+an API key. However, without a key, NCBI limits requests to **3 per
+second**. With a registered API key, the limit increases to **10 per
+second**.
+
+To obtain a free API key:
+
+1.  Register for a [My NCBI
+    account](https://www.ncbi.nlm.nih.gov/account/)
+2.  Go to your [Account
+    Settings](https://www.ncbi.nlm.nih.gov/account/settings/) and
+    generate an API key
+
+You can set the API key in three ways (in order of priority):
+
+``` r
+# Option 1: Pass it directly to functions
+D <- pmApiRequest(query = query, limit = 100, api_key = "your_api_key")
+
+# Option 2: Set the PUBMED_API_KEY environment variable in your .Renviron
+# Run: usethis::edit_r_environ()
+# Then add: PUBMED_API_KEY=your_api_key
+
+# Option 3: Use the ENTREZ_KEY variable (rentrez convention)
+# ENTREZ_KEY=your_api_key
+```
+
+When the API key is set via environment variable, all pubmedR functions
+will use it automatically.
+
+## Getting Started
 
 ``` r
 library(pubmedR)
 ```
 
+### Building a query
 
+The `pmQueryBuild()` function helps you construct valid PubMed queries
+programmatically:
 
-## A brief example
-
-Imagine, we want to download a metadata collection of journal articles which (1) have used bibliometric approaches in their researches, (2) have been published for the past 20 years (3) and have been written in the English language. 
-
-The workflow mainly consists of four steps:
-
-1. Write the query
-
-2. Check the effectiveness of the query
-
-3. Download the collection of document metadata
-
-4. Convert the download object into a "readable" and and "usable" format
-
-By default, the access to NCBI API system is free and does not necessarily require an "API key". In this case, NCBI limits users to making only 3 requests per second. Users who register for an “API key” are able to make up to ten requests per second. 
-
-Obtaing a key is very simple, you just need to register for [“my ncbi account”](https://www.ncbi.nlm.nih.gov/account/) then click on a button in the ["account settings page"](https://www.ncbi.nlm.nih.gov/account/settings/).
-
-Once you have an API key, set the argument api_key="*your API key*" otherwise api_key="*NULL*":
 ``` r
-# if you have got an API key
-api_key <- "your API key"
+# Build a query for bibliometric articles in English, published between 2015 and 2024
+query <- pmQueryBuild(
+  terms = "bibliometric*",
+  fields = "Title/Abstract",
+  language = "english",
+  pub_type = "Journal Article",
+  date_range = c("2015", "2024")
+)
 
-# if you haven't got an API key
-api_key = NULL
+query
+#> [1] "bibliometric*[Title/Abstract] AND english[LA] AND Journal Article[PT] AND 2015:2024[DP]"
 ```
 
-
-## First step: Write a query
-
-First of all, we define a query to submit at the NCBI PubMed system. For example, imagine we want to download a collection of journal articles using bibliometric analyses, published in the last 20 years in the English language. Translating in the query language, we have to set the following statements:
-
-- *documents containing the word bibliometric and its variations in their title or abstract:* **"bibliometric\*[Title/Abstract]"**
-
-- *documents are written in the English language:* **"english[LA]"**
-
-- *documents that are categorized as Journal Article:* **"Journal Article[PT]"**
-
-- *documents published from 2000 to 2020:* **"2000:2020[DP]"**
-
-Combining all these elements using the Boolean operator "AND", we obtain the final query:
+You can also combine multiple terms and add MeSH filters:
 
 ``` r
-query <- "bibliometric*[Title/Abstract] AND english[LA] AND Journal Article[PT] AND 2000:2020[DP]"
+# Combine multiple terms with OR
+query_ml <- pmQueryBuild(
+  terms = c("machine learning", "deep learning", "artificial intelligence"),
+  fields = "Title/Abstract",
+  operator = "OR",
+  mesh_terms = "Neoplasms",
+  language = "english",
+  date_range = c("2020", "2024")
+)
+
+query_ml
+#> [1] "(machine learning[Title/Abstract] OR deep learning[Title/Abstract] OR artificial intelligence[Title/Abstract]) AND Neoplasms[MeSH Terms] AND english[LA] AND 2020:2024[DP]"
 ```
 
+Of course, you can also write the query string manually using the
+[Entrez query
+syntax](https://pubmed.ncbi.nlm.nih.gov/help/#search-tags):
 
-
-## Second step: Check the effectiveness of the query
-
-Now, we want to know how many documents could be retrieved by our query. 
-
-To do that, we use the function pmQueryTotalCount:
 ``` r
-res <- pmQueryTotalCount(query = query, api_key = api_key)
+query <- "bibliometric*[Title/Abstract] AND english[LA] AND Journal Article[PT] AND 2015:2024[DP]"
+```
+
+### Checking query results
+
+Before downloading, check how many records match your query:
+
+``` r
+res <- pmQueryTotalCount(query = query)
 
 res$total_count
-
-# [1] 2921
-
-D$query_translation
-
-[1] "(bibliometric[Title/Abstract] OR bibliometrica[Title/Abstract] OR bibliometrical[Title/Abstract] OR bibliometrically[Title/Abstract] OR bibliometricas[Title/Abstract] OR bibliometrician[Title/Abstract] OR bibliometricians[Title/Abstract] OR bibliometricly[Title/Abstract] OR bibliometrico[Title/Abstract] OR bibliometricos[Title/Abstract] OR bibliometrics[Title/Abstract] OR bibliometrics'[Title/Abstract] OR bibliometricsmethod[Title/Abstract] OR bibliometricstrade[Title/Abstract]) AND english[LA] AND Journal Article[PT] AND 2000[PDAT] : 2020[PDAT]"
+#> [1] 12448
+res$query_translation
+#> [1] "\"bibliometric*\"[Title/Abstract] AND \"english\"[Language] AND \"journal article\"[Publication Type] AND 2015/01/01:2024/12/31[Date - Publication]"
 ```
 
+### Downloading records
 
-
-## Third step: Download the collection of document metadata
-
-We could decide to change the query or continue to download the whole collection or a part of it (setting the limit argument lower than res$total_count).
-
-Image, we decided to download the whole collection composed by 2921 documents:
+Download metadata for the matching records:
 
 ``` r
-D <- pmApiRequest(query = query, limit = res$total_count, api_key = api_key)
-
-# Documents  200  of  2921 
-# Documents  400  of  2921 
-# Documents  600  of  2921 
-# Documents  800  of  2921 
-# Documents  1000  of  2921 
-# Documents  1200  of  2921 
-# Documents  1400  of  2921 
-# Documents  1600  of  2921 
-# Documents  1800  of  2921 
-# Documents  2000  of  2921 
-# Documents  2200  of  2921 
-# Documents  2400  of  2921 
-# Documents  2600  of  2921 
-# Documents  2800  of  2921 
-# Documents  2921  of  2921 
-```
-The function pmApiRequest returns a list D composed by 5 objects:
-
-- "data". It is the xml-structured list containing the bibliographic metadata collection downloaded from the PubMed database.
-
-- "query". It a character object containing the original query formulated by the user.
-
-- "query_translation". It a character object containing the query, translated by the NCBI Automatic Terms Translation system and submitted to the PubMed database. 
-
-- "records_downloaded". It is an integer object indicating the total number of records downloaded and stored in "data".
-
-- "total_counts". It is an integer object indicating the total number of records matching the query (stored in the "query_translation" object"). 
-
-
-
-
-## Fourth step: Convert the download object into a "readable" and and "usable" format
-
-
-### From the xml-structured object to a "classical" data frame
-
-Finally, we transform the xml-structured object D into a data frame, with cases corresponding to documents and variables to Field Tags as used in the [bibliometrix R package] (https://CRAN.R-project.org/package=bibliometrix, https://bibliometrix.org/, https://github.com/massimoaria/bibliometrix).
-
-``` r
-M <- pmApi2df(D)
-
-str(M)
-
-# 'data.frame':	2918 obs. of  27 variables:
- # $ AU    : chr  "DU L;LUO S;LIU G;WANG H;ZHENG L;ZHANG Y" "DUAN L;ZHU G" "YANG C;WANG X;TANG X;BAO X;WANG R" "FERHATOGLU SY;YAPICI N" ...
- # $ AF    : chr  "DU, LIANG;LUO, SHANXIA;LIU, GUINA;WANG, HAO;ZHENG, LINGLI;ZHANG, YONGGANG" "DUAN, LI;ZHU, GANG" "YANG, CHENGXIAN;WANG, XUE;TANG, XIAOLI;BAO, XINJIE;WANG, RENZHI" "FERHATOGLU, S YÄ±LMAZ;YAPICI, N" ...
- # $ TI    : chr  "THE 100 TOP-CITED STUDIES ABOUT PAIN AND DEPRESSION." "MAPPING THEME TRENDS AND KNOWLEDGE STRUCTURE OF MAGNETIC RESONANCE IMAGING STUDIES OF SCHIZOPHRENIA: A BIBLIOME"| __truncated__ "RESEARCH TRENDS OF STEM CELLS IN ISCHEMIC STROKE FROM 1999 TO 2018: A BIBLIOMETRIC ANALYSIS." "A BIBLIOMETRIC ANALYSIS OF THE ARTICLES FOCUSING ON THE SUBJECT OF BRAIN DEATH PUBLISHED IN SCIENTIFIC CITATION"| __truncated__ ...
- # $ SO    : chr  "FRONTIERS IN PSYCHOLOGY" "FRONTIERS IN PSYCHIATRY" "CLINICAL NEUROLOGY AND NEUROSURGERY" "TRANSPLANTATION PROCEEDINGS" ...
- # $ SO_CO : chr  "SWITZERLAND" "SWITZERLAND" "NETHERLANDS" "UNITED STATES" ...
- # $ LA    : chr  "ENG" "ENG" "ENG" "ENG" ...
- # $ DT    : chr  "JOURNAL ARTICLE" "JOURNAL ARTICLE" "JOURNAL ARTICLE" "JOURNAL ARTICLE" ...
- # $ DE    : chr  "BIBLIOMETRIC REVIEW;CITATION;CITATION ANALYSIS;DEPRESSION;PAIN;TOP-CITED" "BIBLIOMETRIC ANALYSIS;CO-OCCURRENCE ANALYSIS;MAGNETIC RESONANCE IMAGING;SCHIZOPHRENIA;SOCIAL NETWORK ANALYSIS;S"| __truncated__ "BIBLIOMETRICS;ISCHEMIC STROKE;PUBLICATIONS;STEM CELLS;VOSVIEWER" "" ...
- # $ ID    : chr  "" "" "" "" ...
- # $ MESH  : chr  "" "" "" "" ...
- # $ AB    : chr  "WITH THE ESTIMATED HIGH PREVALENCE IN THE POPULATION, THE TWO SYMPTOMS OF PAIN AND DEPRESSION THREATEN THE WELL"| __truncated__ "RECENTLY, MAGNETIC RESONANCE IMAGING (MRI) TECHNOLOGY HAS BEEN WIDELY USED TO QUANTITATIVELY ANALYZE BRAIN STRU"| __truncated__ "MANY STUDIES HAVE EVALUATED THE SAFETY AND EFFICACY OF STEM CELLS AS THERAPEUTIC AGENTS FOR ISCHEMIC STROKE. WE"| __truncated__ "ALTHOUGH THE TOPIC OF BRAIN DEATH (BD) HAS BEEN INCREASING IN POPULARITY CONSIDERABLY IN RECENT YEARS BY THE SN"| __truncated__ ...
- # $ C1    : chr  "DEPARTMENT OF PERIODICAL PRESS AND NATIONAL CLINICAL RESEARCH CENTER FOR GERIATRICS, WEST CHINA HOSPITAL, SICHU"| __truncated__ "DEPARTMENT OF PSYCHIATRY, THE FIRST AFFILIATED HOSPITAL OF CHINA MEDICAL UNIVERSITY, SHENYANG, CHINA.;DEPARTMEN"| __truncated__ "DEPARTMENT OF NEUROSURGERY, PEKING UNION MEDICAL COLLEGE HOSPITAL, PEKING UNION MEDICAL COLLEGE & CHINESE ACADE"| __truncated__ "DEPARTMENT OF ANESTHESIOLOGY AND REANIMATION, UNIVERSITY OF HEALTH SCIENCES DR. SIYAMI ERSEK TRAINING AND RESEA"| __truncated__ ...
- # $ CR    : chr  "NA" "NA" "NA" "NA" ...
- # $ TC    : num  0 0 0 0 0 0 0 0 0 0 ...
- # $ SN    : chr  "1664-1078" "1664-0640" "1872-6968" "1873-2623" ...
- # $ J9    : chr  "FRONT PSYCHOL" "FRONT PSYCHIATRY" "CLIN NEUROL NEUROSURG" "TRANSPLANT. PROC." ...
- # $ JI    : chr  "FRONT PSYCHOL" "FRONT PSYCHIATRY" "CLIN NEUROL NEUROSURG" "TRANSPLANT. PROC." ...
- # $ PY    : num  2019 2020 2020 2020 2020 ...
- # $ VL    : chr  "10" "11" "192" NA ...
- # $ DI    : chr  "10.3389/fpsyg.2019.03072" "10.3389/fpsyt.2020.00027" "10.1016/j.clineuro.2020.105740" "10.1016/j.transproceed.2020.01.034" ...
- # $ PG    : chr  "3072" "27" "105740" NA ...
- # $ UT    : chr  "32116876" "32116844" "32114325" "32111384" ...
- # $ PMID  : chr  "32116876" "32116844" "32114325" "32111384" ...
- # $ DB    : chr  "PUBMED" "PUBMED" "PUBMED" "PUBMED" ...
- # $ AU_UN : chr  "DEPARTMENT OF PERIODICAL PRESS AND NATIONAL CLINICAL RESEARCH CENTER FOR GERIATRICS, WEST CHINA HOSPITAL, SICHU"| __truncated__ "DEPARTMENT OF PSYCHIATRY, THE FIRST AFFILIATED HOSPITAL OF CHINA MEDICAL UNIVERSITY, SHENYANG, CHINA.;DEPARTMEN"| __truncated__ "DEPARTMENT OF NEUROSURGERY, PEKING UNION MEDICAL COLLEGE HOSPITAL, PEKING UNION MEDICAL COLLEGE & CHINESE ACADE"| __truncated__ "DEPARTMENT OF ANESTHESIOLOGY AND REANIMATION, UNIVERSITY OF HEALTH SCIENCES DR. SIYAMI ERSEK TRAINING AND RESEA"| __truncated__ ...
- # $ AU_CO : chr  "NA" "NA" "NA" "NA" ...
- # $ AU1_CO: chr  "NA" "NA" "NA" "NA" ...
+D <- pmApiRequest(query = query, limit = 200)
 ```
 
+The `pmApiRequest()` function returns a list with five elements:
 
+- **data**: XML-structured list of bibliographic metadata
+- **query**: the original query
+- **query_translation**: query translated by NCBI
+- **records_downloaded**: number of records downloaded
+- **total_count**: total number of matching records
 
+### Converting to a data frame
 
-
-## An overview to the collection using bibliometrix
-
-Now, we can use some bibliometrix functions to get an overview of the bibliographic collection.
-
-bibliometrix is an R-tool for quantitative research in scientometrics and bibliometrics that includes all the main bibliometric methods of analysis (https://CRAN.R-project.org/package=bibliometrix, https://bibliometrix.org/, https://github.com/massimoaria/bibliometrix).
-
-First, we install and load the bibliometrix package:
+Convert the downloaded XML data into a structured data frame:
 
 ``` r
-install.packages("bibliometrix")
+M <- pmApi2df(D, format = "bibliometrix")
+```
+
+``` r
+dplyr::glimpse(M)
+#> Rows: 200
+#> Columns: 30
+#> $ AU        <chr> "LLONTO CAICEDO Y;MORÁN SANTAMARÍA RO;ALARCÓN VILLANUEVA G;Z…
+#> $ AF        <chr> "LLONTO CAICEDO, YEFFERSON;MORÁN SANTAMARÍA, ROGGER ORLANDO;…
+#> $ TI        <chr> "URBAN PLANNING EFFECTIVENESS AND CITIZEN SATISFACTION. A SY…
+#> $ SO        <chr> "F1000RESEARCH", "F1000RESEARCH", "JOURNAL OF ORTHOPAEDICS",…
+#> $ SO_CO     <chr> "ENGLAND", "ENGLAND", "INDIA", "SAUDI ARABIA", "ENGLAND", "U…
+#> $ LA        <chr> "ENG", "ENG", "ENG", "ENG", "ENG", "ENG", "ENG", "ENG", "ENG…
+#> $ DT        <chr> "JOURNAL ARTICLE", "JOURNAL ARTICLE", "JOURNAL ARTICLE", "JO…
+#> $ DE        <chr> "PRISMA;BIBLIOMETRICS;BIBLIOMETRIX;CITIZEN SATISFACTION;STAT…
+#> $ ID        <chr> "CITY PLANNING;HUMANS;PERSONAL SATISFACTION;QUALITY OF LIFE;…
+#> $ MESH      <chr> "CITY PLANNING;HUMANS;PERSONAL SATISFACTION;QUALITY OF LIFE;…
+#> $ AB        <chr> "THE POPULATION IS INCREASINGLY DEMANDING A BETTER QUALITY O…
+#> $ C1        <chr> "LAMBAYEQUE, UNIVERSIDAD NACIONAL PEDRO RUIZ GALLO, LAMBAYEQ…
+#> $ CR        <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+#> $ TC        <dbl> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+#> $ SN        <chr> "2046-1402", "2046-1402", "0972-978X", "1013-9052", "2046-14…
+#> $ J9        <chr> "F1000RES", "F1000RES", "J ORTHOP", "SAUDI DENT J", "F1000RE…
+#> $ JI        <chr> "F1000RES", "F1000RES", "J ORTHOP", "SAUDI DENT J", "F1000RE…
+#> $ PY        <dbl> 2025, 2025, 2024, 2024, 2025, 2024, 2024, 2024, 2025, 2024, …
+#> $ PY_IS     <chr> "2024", "2024", "2025", "2024", "2024", "2024", "2025", "202…
+#> $ VL        <chr> "13", "13", "66", "36", "13", "2024", "86", "17", "4", "17",…
+#> $ DI        <chr> "10.12688/f1000research.157550.2", "10.12688/f1000research.1…
+#> $ PG        <chr> "1330", "799", "110-118", "1521-1526", "1505", "6199860", "5…
+#> $ GRANT_ID  <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+#> $ GRANT_ORG <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+#> $ UT        <chr> "41287786", "41024939", "40978518", "40952837", "40919447", …
+#> $ PMID      <chr> "41287786", "41024939", "40978518", "40952837", "40919447", …
+#> $ DB        <chr> "PUBMED", "PUBMED", "PUBMED", "PUBMED", "PUBMED", "PUBMED", …
+#> $ AU_UN     <chr> "LAMBAYEQUE, UNIVERSIDAD NACIONAL PEDRO RUIZ GALLO, LAMBAYEQ…
+#> $ AU_CO     <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+#> $ AU1_CO    <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, …
+```
+
+The `format = "bibliometrix"` option (default) creates a data frame
+fully compatible with the [bibliometrix](https://www.bibliometrix.org)
+package, using standard bibliometric field tags:
+
+| Tag | Description         |
+|-----|---------------------|
+| AU  | Authors             |
+| TI  | Title               |
+| SO  | Source (Journal)    |
+| AB  | Abstract            |
+| DE  | Author Keywords     |
+| ID  | MeSH Terms          |
+| DI  | DOI                 |
+| PY  | Publication Year    |
+| C1  | Author Affiliations |
+| TC  | Times Cited         |
+| CR  | Cited References    |
+| …   | and more            |
+
+## Fetching Records by PMID
+
+If you already have a list of PubMed IDs, use `pmFetchById()` to
+download their metadata directly:
+
+``` r
+pmids <- c("25824007", "28981534", "31414462")
+D_pmid <- pmFetchById(pmids = pmids)
+```
+
+``` r
+M_pmid <- pmApi2df(D_pmid)
+```
+
+``` r
+M_pmid[, c("AU", "PY", "TI", "SO")]
+#>                                                                                                                         AU
+#> 1 CASTER DJ;KORTE EA;MERCHANT ML;KLEIN JB;WILKEY DW;ROVIN BH;BIRMINGHAM DJ;HARLEY JB;COBB BL;NAMJOU B;MCLEISH KR;POWELL DW
+#> 2                                        GLÜGE J;STEINLIN C;SCHALLES S;WEGMANN L;TREMP J;BREIVIK K;HUNGERBÜHLER K;BOGDAL C
+#> 3                                                                                                                      EO 
+#>     PY
+#> 1 2014
+#> 2 2017
+#> 3 2019
+#>                                                                                                     TI
+#> 1 AUTOANTIBODIES TARGETING GLOMERULAR ANNEXIN A2 IDENTIFY PATIENTS WITH PROLIFERATIVE LUPUS NEPHRITIS.
+#> 2                                 IMPORT, USE, AND EMISSIONS OF PCBS IN SWITZERLAND FROM 1930 TO 2100.
+#> 3                                                                                     [NOT AVAILABLE].
+#>                                  SO
+#> 1 PROTEOMICS. CLINICAL APPLICATIONS
+#> 2                          PLOS ONE
+#> 3      MMW FORTSCHRITTE DER MEDIZIN
+```
+
+## Citation Enrichment
+
+PubMed does not provide citation counts or reference lists by default.
+pubmedR can enrich your data using the NCBI E-Link service.
+
+### Citations for a single article
+
+``` r
+# Find who cited a specific article (PMID: 25824007)
+cites <- pmCitedBy(pmid = "25824007")
+cat("Number of citing articles:", cites$count, "\n")
+#> Number of citing articles: 31
+cat("First 5 citing PMIDs:", paste(head(cites$cited_by, 5), collapse = ", "), "\n")
+#> First 5 citing PMIDs: 41021815, 40889685, 39057791, 38891801, 37955107
+```
+
+### References of a single article
+
+``` r
+# Find the references of an article
+refs <- pmReferences(pmid = "25824007")
+cat("Number of references:", refs$count, "\n")
+#> Number of references: 62
+cat("First 5 reference PMIDs:", paste(head(refs$references, 5), collapse = ", "), "\n")
+#> First 5 reference PMIDs: 25533130, 25273097, 25248362, 24845390, 24790181
+```
+
+### Batch enrichment of a data frame
+
+Use `pmEnrichCitations()` to add citation data (TC and CR fields) to an
+entire data frame:
+
+``` r
+# Enrich the small PMID dataset with citation data
+M_enriched <- pmEnrichCitations(M_pmid)
+```
+
+``` r
+M_enriched[, c("AU", "PY", "TC", "CR")]
+#>                                                                                                                         AU
+#> 1 CASTER DJ;KORTE EA;MERCHANT ML;KLEIN JB;WILKEY DW;ROVIN BH;BIRMINGHAM DJ;HARLEY JB;COBB BL;NAMJOU B;MCLEISH KR;POWELL DW
+#> 2                                        GLÜGE J;STEINLIN C;SCHALLES S;WEGMANN L;TREMP J;BREIVIK K;HUNGERBÜHLER K;BOGDAL C
+#> 3                                                                                                                      EO 
+#>     PY TC
+#> 1 2014 31
+#> 2 2017  2
+#> 3 2019  0
+#>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            CR
+#> 1 25533130;25273097;25248362;24845390;24790181;24726496;24649358;24319012;24225319;23928303;23867502;23833315;23615266;23519104;23118496;22958486;22879587;22850877;22811486;22706085;22493061;22433915;22189356;22162716;22159597;22129255;22025085;21964468;21640210;21478284;20864496;20847146;20664558;20414746;20090510;19836472;19571279;18773185;18565825;18064521;17907141;17803907;17274980;16723695;16522749;16210453;15601747;15339978;15040839;14717922;14632076;12957142;12861023;12858447;12824285;12403597;11856766;11402500;10802651;10616834;9224761;8647942
+#> 2                                                                                                                                                                                                                                                                                                                                    27876229;27313021;27015905;26889948;26766430;26646689;26632968;26172591;25622721;25548829;24999726;24392941;20848233;20446692;20384373;19957996;17395248;16829543;16190235;15871225;15663299;15091669;12083710;12083709;11951941;9831538
+#> 3                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <NA>
+```
+
+## Integration with bibliometrix
+
+pubmedR is designed to work seamlessly with
+[bibliometrix](https://www.bibliometrix.org) and its Shiny interface
+[biblioshiny](https://www.bibliometrix.org/home/index.php/layout/biblioshiny).
+
+``` r
 library(bibliometrix)
-```
 
-### Main information about the collection
-
-Then, we use the biblioAnalysis and summary functions to perform a descriptive analysis of the data frame:
-Then, we add some metadata to the pubmed collection, and we use the biblioAnalysis and summary functions to perform a descriptive analysis of the data frame:
-
-``` r
+# Convert and analyze
 M <- convert2df(D, dbsource = "pubmed", format = "api")
-
 results <- biblioAnalysis(M)
 summary(results)
 
-# Main Information about data
-# 
-#  Documents                             2918 
-#  Sources (Journals, Books, etc.)       1275 
-#  Keywords Plus (ID)                    2245 
-#  Author's Keywords (DE)                4212 
-#  Period                                2000 - 2020 
-#  Average citations per documents       0 
-# 
-#  Authors                               8854 
-#  Author Appearances                    12928 
-#  Authors of single-authored documents  229 
-#  Authors of multi-authored documents   8625 
-#  Single-authored documents             307 
-# 
-#  Documents per Author                  0.33 
-#  Authors per Document                  3.03 
-#  Co-Authors per Documents              4.43 
-#  Collaboration Index                   3.31 
-#  
-#  Document types                     
-#  BIOGRAPHY                         4 
-#  CASE REPORTS                      2 
-#  COMMENT                           8 
-#  COMPARATIVE STUDY                 97 
-#  EDITORIAL                         2 
-#  ENGLISH ABSTRACT                  1 
-#  EVALUATION STUDY                  19 
-#  HISTORICAL ARTICLE                82 
-#  INTRODUCTORY JOURNAL ARTICLE      2 
-#  JOURNAL ARTICLE                   2694 
-#  LETTER                            3 
-#  REVIEW                            4 
-#  
-# 
-# Annual Scientific Production
-# 
-#  Year    Articles
-#     2000       10
-#     2001        8
-#     2002       10
-#     2003       16
-#     2004       18
-#     2005       27
-#     2006       37
-#     2007       24
-#     2008       43
-#     2009       58
-#     2010       73
-#     2011       93
-#     2012      121
-#     2013      158
-#     2014      172
-#     2015      225
-#     2016      254
-#     2017      276
-#     2018      380
-#     2019      544
-#     2020      159
-# 
-# Annual Percentage Growth Rate 14.83383 
-# 
-# 
-# Most Productive Authors
-# 
-#    Authors        Articles Authors        Articles Fractionalized
-# 1      SWEILEH WM       62     SWEILEH WM                   25.40
-# 2      ZYOUD SH         59     ZYOUD SH                     18.74
-# 3      AL-JABI SW       48     HO YS                        13.89
-# 4      HO YS            34     AL-JABI SW                   13.00
-# 5      YOON DY          27     HUH S                         9.33
-# 6      SAWALHA AF       26     BORNMANN L                    9.29
-# 7      WANG Y           26     SMITH DR                      9.00
-# 8      ZHANG Y          24     ÅŽENEL E                      7.70
-# 9      BORNMANN L       22     YEUNG AWK                     6.22
-# 10     KHOSA F          22     SHAMIM T                      6.00
-# 
-# 
-# Top manuscripts per citations
-# 
-#                                        Paper          TC TCperYear
-# 1  DU L, 2019, FRONT PSYCHOL                           0         0
-# 2  DUAN L, 2020, FRONT PSYCHIATRY                      0         0
-# 3  YANG C, 2020, CLIN NEUROL NEUROSURG                 0         0
-# 4  FERHATOGLU SY, 2020, TRANSPLANT. PROC.              0         0
-# 5  CHEN L, 2020, PHYTOMEDICINE                         0         0
-# 6  KUNZE KN, 2020, AM J SPORTS MED                     0         0
-# 7  CUOCOLO R, 2020, INSIGHTS IMAGING                   0         0
-# 8  WU M, 2020, J. MATERN. FETAL. NEONATAL. MED.        0         0
-# 9  LEE IS, 2020, J PAIN RES                            0         0
-# 10 SANT'ANNA FH, 2020, INT. J. SYST. EVOL. MICROBIOL.  0         0
-# 
-# 
-# Corresponding Author's Countries
-# 
-#   Country Articles Freq  SCP MCP MCP_Ratio
-# 1      NA     2918    1 2918   0         0
-# 
-# 
-# SCP: Single Country Publications
-# 
-# MCP: Multiple Country Publications
-# 
-# 
-# Total Citations per Country
-# 
-#   Country      Total Citations Average Article Citations
-# 1           NA               0                         0
-# 
-# 
-# Most Relevant Sources
-# 
-#                                                       Sources        Articles
-# 1  PLOS ONE                                                               106
-# 2  SCIENTOMETRICS                                                          67
-# 3  WORLD NEUROSURGERY                                                      55
-# 4  ENVIRONMENTAL SCIENCE AND POLLUTION RESEARCH INTERNATIONAL              36
-# 5  INTERNATIONAL JOURNAL OF ENVIRONMENTAL RESEARCH AND PUBLIC HEALTH       34
-# 6  MEDICINE                                                                31
-# 7  NEURAL REGENERATION RESEARCH                                            29
-# 8  BMJ OPEN                                                                26
-# 9  JOURNAL OF THE MEDICAL LIBRARY ASSOCIATION : JMLA                       26
-# 10 PEERJ                                                                   25
-# 
-# 
-# Most Relevant Keywords
-# 
-#    Author Keywords (DE)      Articles Keywords-Plus (ID)     Articles
-# 1      BIBLIOMETRICS              667  BIBLIOMETRICS             1545
-# 2      BIBLIOMETRIC ANALYSIS      331  HUMANS                    1518
-# 3      BIBLIOMETRIC               172  PERIODICALS AS TOPIC       592
-# 4      CITATION ANALYSIS          123  BIOMEDICAL RESEARCH        483
-# 5      H INDEX                     97  PUBLISHING                 419
-# 6      PUBLICATIONS                84  JOURNAL IMPACT FACTOR      323
-# 7      CITATIONS                   81  PUBLICATIONS               252
-# 8      CITATION                    69  RESEARCH                   252
-# 9      WEB OF SCIENCE              66  UNITED STATES              219
-# 10     SCIENTOMETRICS              64  FEMALE                     174
+# Or launch the interactive dashboard
+biblioshiny()
 ```
 
-"# pubmedR" 
+The data frame produced by `pmApi2df()` uses the same field tags as
+bibliometrix, so it can be directly used with all bibliometrix
+functions: `biblioAnalysis()`, `biblioNetwork()`, `thematicMap()`,
+`conceptualStructure()`, and more.
+
+## Workflow Summary
+
+The typical pubmedR workflow follows these steps:
+
+                                       +-------------------+
+                                       | pmQueryBuild()    |
+                                       | Build query       |
+                                       +---------+---------+
+                                                 |
+                                                 v
+                                       +-------------------+
+                                       | pmQueryTotalCount()|
+                                       | Check result count|
+                                       +---------+---------+
+                                                 |
+                                  +--------------+--------------+
+                                  |                             |
+                                  v                             v
+                        +-------------------+         +-------------------+
+                        | pmApiRequest()    |         | pmFetchById()     |
+                        | Search & download |         | Download by PMID  |
+                        +---------+---------+         +---------+---------+
+                                  |                             |
+                                  +-------------+---------------+
+                                                |
+                                                v
+                                      +-------------------+
+                                      | pmApi2df()        |
+                                      | Convert to df     |
+                                      +---------+---------+
+                                                |
+                                                v
+                                      +-------------------+
+                                      | pmEnrichCitations()|
+                                      | Add TC & CR       |
+                                      +---------+---------+
+                                                |
+                                                v
+                                      +-------------------+
+                                      | bibliometrix      |
+                                      | Analyze & explore |
+                                      +-------------------+
+
+## About PubMed
+
+[PubMed](https://pubmed.ncbi.nlm.nih.gov/) is a free search engine
+maintained by the National Center for Biotechnology Information (NCBI)
+at the U.S. National Library of Medicine (NLM). It provides access to
+over **36 million** citations and abstracts of biomedical literature
+from MEDLINE, life science journals, and online books.
+
+pubmedR uses the [NCBI E-utilities
+API](https://www.ncbi.nlm.nih.gov/books/NBK25500/), which provides
+programmatic access to PubMed data including:
+
+- **ESearch**: Search and retrieve a list of matching record IDs
+- **EFetch**: Download full records in XML format
+- **ELink**: Find related records (citations, references)
+
+## Citation
+
+If you use pubmedR in your research, please cite it as:
+
+``` r
+citation("pubmedR")
+```
+
+> Aria, M. (2023). *pubmedR: Gathering Metadata About Publications,
+> Grants, Clinical Trials from PubMed Database*. R package.
+> <https://github.com/massimoaria/pubmedR>
+
+## Community
+
+- Report bugs or request features at:
+  <https://github.com/massimoaria/pubmedR/issues>
+- For bibliometric analysis: <https://www.bibliometrix.org>
+- NCBI API documentation: <https://www.ncbi.nlm.nih.gov/books/NBK25500/>

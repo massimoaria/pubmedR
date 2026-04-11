@@ -1,0 +1,324 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%",
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+# pubmedR <img src="man/figures/logo.png" align="right" height="139" />
+
+<!-- badges: start -->
+[![CRAN status](https://www.r-pkg.org/badges/version/pubmedR)](https://CRAN.R-project.org/package=pubmedR)
+[![CRAN downloads](https://cranlogs.r-pkg.org/badges/pubmedR)](https://CRAN.R-project.org/package=pubmedR)
+[![Project Status: Active](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![R-CMD-check](https://github.com/massimoaria/pubmedR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/massimoaria/pubmedR/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
+
+**pubmedR** is an R package for gathering bibliographic metadata from the [PubMed](https://pubmed.ncbi.nlm.nih.gov/) database using [NCBI Entrez](https://www.ncbi.nlm.nih.gov/books/NBK25500/) REST APIs.
+
+It provides a complete toolkit to **search**, **download**, **convert**, and **enrich** PubMed records, with full compatibility with the [bibliometrix](https://www.bibliometrix.org) R package for bibliometric analysis.
+
+## Core Functions
+
+| Function | Description |
+|---|---|
+| `pmQueryBuild()` | Build a PubMed query programmatically |
+| `pmQueryTotalCount()` | Count the number of records matching a query |
+| `pmApiRequest()` | Download bibliographic metadata from PubMed |
+| `pmApi2df()` | Convert downloaded XML data into a data frame |
+| `pmFetchById()` | Download records by a list of PMIDs |
+| `pmCitedBy()` | Find articles that cite a given article |
+| `pmReferences()` | Find references cited by a given article |
+| `pmEnrichCitations()` | Add citation counts and references to a data frame |
+
+## Installation
+
+You can install the released version of pubmedR from [CRAN](https://CRAN.R-project.org) with:
+
+```r
+install.packages("pubmedR")
+```
+
+Or install the development version from [GitHub](https://github.com/massimoaria/pubmedR):
+
+```r
+# install.packages("devtools")
+devtools::install_github("massimoaria/pubmedR")
+```
+
+## API Key Setup
+
+Access to the NCBI PubMed API is free and does not necessarily require an API key. However, without a key, NCBI limits requests to **3 per second**. With a registered API key, the limit increases to **10 per second**.
+
+To obtain a free API key:
+
+1. Register for a [My NCBI account](https://www.ncbi.nlm.nih.gov/account/)
+2. Go to your [Account Settings](https://www.ncbi.nlm.nih.gov/account/settings/) and generate an API key
+
+You can set the API key in three ways (in order of priority):
+
+```r
+# Option 1: Pass it directly to functions
+D <- pmApiRequest(query = query, limit = 100, api_key = "your_api_key")
+
+# Option 2: Set the PUBMED_API_KEY environment variable in your .Renviron
+# Run: usethis::edit_r_environ()
+# Then add: PUBMED_API_KEY=your_api_key
+
+# Option 3: Use the ENTREZ_KEY variable (rentrez convention)
+# ENTREZ_KEY=your_api_key
+```
+
+When the API key is set via environment variable, all pubmedR functions will use it automatically.
+
+## Getting Started
+
+```{r load}
+library(pubmedR)
+```
+
+### Building a query
+
+The `pmQueryBuild()` function helps you construct valid PubMed queries programmatically:
+
+```{r query-build}
+# Build a query for bibliometric articles in English, published between 2015 and 2024
+query <- pmQueryBuild(
+  terms = "bibliometric*",
+  fields = "Title/Abstract",
+  language = "english",
+  pub_type = "Journal Article",
+  date_range = c("2015", "2024")
+)
+
+query
+```
+
+You can also combine multiple terms and add MeSH filters:
+
+```{r query-build-complex}
+# Combine multiple terms with OR
+query_ml <- pmQueryBuild(
+  terms = c("machine learning", "deep learning", "artificial intelligence"),
+  fields = "Title/Abstract",
+  operator = "OR",
+  mesh_terms = "Neoplasms",
+  language = "english",
+  date_range = c("2020", "2024")
+)
+
+query_ml
+```
+
+Of course, you can also write the query string manually using the [Entrez query syntax](https://pubmed.ncbi.nlm.nih.gov/help/#search-tags):
+
+```r
+query <- "bibliometric*[Title/Abstract] AND english[LA] AND Journal Article[PT] AND 2015:2024[DP]"
+```
+
+### Checking query results
+
+Before downloading, check how many records match your query:
+
+```{r total-count}
+res <- pmQueryTotalCount(query = query)
+
+res$total_count
+res$query_translation
+```
+
+### Downloading records
+
+Download metadata for the matching records:
+
+```{r download, results='hide'}
+D <- pmApiRequest(query = query, limit = 200)
+```
+
+The `pmApiRequest()` function returns a list with five elements:
+
+- **data**: XML-structured list of bibliographic metadata
+- **query**: the original query
+- **query_translation**: query translated by NCBI
+- **records_downloaded**: number of records downloaded
+- **total_count**: total number of matching records
+
+### Converting to a data frame
+
+Convert the downloaded XML data into a structured data frame:
+
+```{r convert, results='hide'}
+M <- pmApi2df(D, format = "bibliometrix")
+```
+
+```{r show-df}
+dplyr::glimpse(M)
+```
+
+The `format = "bibliometrix"` option (default) creates a data frame fully compatible with the [bibliometrix](https://www.bibliometrix.org) package, using standard bibliometric field tags:
+
+| Tag | Description |
+|-----|-------------|
+| AU | Authors |
+| TI | Title |
+| SO | Source (Journal) |
+| AB | Abstract |
+| DE | Author Keywords |
+| ID | MeSH Terms |
+| DI | DOI |
+| PY | Publication Year |
+| C1 | Author Affiliations |
+| TC | Times Cited |
+| CR | Cited References |
+| ... | and more |
+
+## Fetching Records by PMID
+
+If you already have a list of PubMed IDs, use `pmFetchById()` to download their metadata directly:
+
+```{r fetch-by-id, results='hide'}
+pmids <- c("25824007", "28981534", "31414462")
+D_pmid <- pmFetchById(pmids = pmids)
+```
+
+```{r fetch-by-id-show, results='hide'}
+M_pmid <- pmApi2df(D_pmid)
+```
+
+```{r fetch-by-id-table}
+M_pmid[, c("AU", "PY", "TI", "SO")]
+```
+
+## Citation Enrichment
+
+PubMed does not provide citation counts or reference lists by default. pubmedR can enrich your data using the NCBI E-Link service.
+
+### Citations for a single article
+
+```{r cited-by}
+# Find who cited a specific article (PMID: 25824007)
+cites <- pmCitedBy(pmid = "25824007")
+cat("Number of citing articles:", cites$count, "\n")
+cat("First 5 citing PMIDs:", paste(head(cites$cited_by, 5), collapse = ", "), "\n")
+```
+
+### References of a single article
+
+```{r references}
+# Find the references of an article
+refs <- pmReferences(pmid = "25824007")
+cat("Number of references:", refs$count, "\n")
+cat("First 5 reference PMIDs:", paste(head(refs$references, 5), collapse = ", "), "\n")
+```
+
+### Batch enrichment of a data frame
+
+Use `pmEnrichCitations()` to add citation data (TC and CR fields) to an entire data frame:
+
+```{r enrich, results='hide'}
+# Enrich the small PMID dataset with citation data
+M_enriched <- pmEnrichCitations(M_pmid)
+```
+
+```{r enrich-show}
+M_enriched[, c("AU", "PY", "TC", "CR")]
+```
+
+## Integration with bibliometrix
+
+pubmedR is designed to work seamlessly with [bibliometrix](https://www.bibliometrix.org) and its Shiny interface [biblioshiny](https://www.bibliometrix.org/home/index.php/layout/biblioshiny).
+
+```r
+library(bibliometrix)
+
+# Convert and analyze
+M <- convert2df(D, dbsource = "pubmed", format = "api")
+results <- biblioAnalysis(M)
+summary(results)
+
+# Or launch the interactive dashboard
+biblioshiny()
+```
+
+The data frame produced by `pmApi2df()` uses the same field tags as bibliometrix, so it can be directly used with all bibliometrix functions: `biblioAnalysis()`, `biblioNetwork()`, `thematicMap()`, `conceptualStructure()`, and more.
+
+## Workflow Summary
+
+The typical pubmedR workflow follows these steps:
+
+```
+                                   +-------------------+
+                                   | pmQueryBuild()    |
+                                   | Build query       |
+                                   +---------+---------+
+                                             |
+                                             v
+                                   +-------------------+
+                                   | pmQueryTotalCount()|
+                                   | Check result count|
+                                   +---------+---------+
+                                             |
+                              +--------------+--------------+
+                              |                             |
+                              v                             v
+                    +-------------------+         +-------------------+
+                    | pmApiRequest()    |         | pmFetchById()     |
+                    | Search & download |         | Download by PMID  |
+                    +---------+---------+         +---------+---------+
+                              |                             |
+                              +-------------+---------------+
+                                            |
+                                            v
+                                  +-------------------+
+                                  | pmApi2df()        |
+                                  | Convert to df     |
+                                  +---------+---------+
+                                            |
+                                            v
+                                  +-------------------+
+                                  | pmEnrichCitations()|
+                                  | Add TC & CR       |
+                                  +---------+---------+
+                                            |
+                                            v
+                                  +-------------------+
+                                  | bibliometrix      |
+                                  | Analyze & explore |
+                                  +-------------------+
+```
+
+## About PubMed
+
+[PubMed](https://pubmed.ncbi.nlm.nih.gov/) is a free search engine maintained by the National Center for Biotechnology Information (NCBI) at the U.S. National Library of Medicine (NLM). It provides access to over **36 million** citations and abstracts of biomedical literature from MEDLINE, life science journals, and online books.
+
+pubmedR uses the [NCBI E-utilities API](https://www.ncbi.nlm.nih.gov/books/NBK25500/), which provides programmatic access to PubMed data including:
+
+- **ESearch**: Search and retrieve a list of matching record IDs
+- **EFetch**: Download full records in XML format
+- **ELink**: Find related records (citations, references)
+
+## Citation
+
+If you use pubmedR in your research, please cite it as:
+
+```r
+citation("pubmedR")
+```
+
+> Aria, M. (2023). *pubmedR: Gathering Metadata About Publications, Grants, Clinical Trials from PubMed Database*. R package. https://github.com/massimoaria/pubmedR
+
+## Community
+
+- Report bugs or request features at: https://github.com/massimoaria/pubmedR/issues
+- For bibliometric analysis: https://www.bibliometrix.org
+- NCBI API documentation: https://www.ncbi.nlm.nih.gov/books/NBK25500/
