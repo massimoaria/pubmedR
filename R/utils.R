@@ -12,6 +12,10 @@ list2char <- function(x, use.names = TRUE, classes = "ANY") {
   i <- 0L
   items <- rapply(x, function(x) {
     i <<- i + 1L
+    ## Sanitize encoding: convert to UTF-8, replacing invalid bytes
+    if (is.character(x)) {
+      x <- iconv(x, from = "", to = "UTF-8", sub = "")
+    }
     Ch[[i]] <<- x
     TRUE
   }, classes = classes)

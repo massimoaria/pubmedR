@@ -71,7 +71,7 @@ pmApi2df <- function(P, format = "bibliometrix") {
     stringsAsFactors = FALSE
   )
 
-  pb <- utils::txtProgressBar(min = 1, max = n, initial = 1, char = "=", style = 3)
+  pb <- utils::txtProgressBar(min = 0, max = n, initial = 0, char = "=", style = 3)
 
   for (i in 1:n) {
     utils::setTxtProgressBar(pb, i)

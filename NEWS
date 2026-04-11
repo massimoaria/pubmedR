@@ -48,6 +48,20 @@
 * `pmApiRequest()` documentation now correctly references `pmQueryBuild()`
   (previously referenced a non-existent function).
 
+## Bug fixes
+
+* Fixed HTTP 400 error when query returns exactly one record. The
+  `retstart` parameter now correctly starts at 0 instead of 1 (GitHub
+  issues #7 and #9, PR #13).
+
+* Fixed "invalid multibyte string" error in `pmApi2df()` caused by
+  non-UTF-8 characters in PubMed XML records. Encoding is now sanitized
+  during list-to-character conversion (GitHub issues #3 and #6).
+
+* Fixed `txtProgressBar` error in `pmApi2df()` when converting a single
+  record (`min == max` when `n == 1`), by starting the progress bar at 0
+  (GitHub PR #13).
+
 ## Infrastructure
 
 * Added test suite using testthat (66 tests covering utilities, query building,
