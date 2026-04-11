@@ -14,3 +14,4 @@ Rubbish
 ^_gh-pages$
 ^\.claude$
 ^README\.Rmd$
+^\.github$
