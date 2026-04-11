@@ -18,6 +18,10 @@
 * `pmEnrichCitations()`: batch enrich a bibliometric data frame with real
   citation counts (TC) and cited references (CR) from NCBI E-Link data.
 
+* `pmCollect()`: one-step wrapper that covers the full workflow — query
+  building, record count, download, conversion to data frame, and optional
+  citation enrichment.
+
 ## Improvements
 
 * All API calls now include error handling with automatic retry and

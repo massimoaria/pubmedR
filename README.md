@@ -35,6 +35,7 @@ analysis.
 | `pmCitedBy()`         | Find articles that cite a given article            |
 | `pmReferences()`      | Find references cited by a given article           |
 | `pmEnrichCitations()` | Add citation counts and references to a data frame |
+| `pmCollect()`         | One-step wrapper for the full workflow             |
 
 ## Installation
 
@@ -90,6 +91,99 @@ will use it automatically.
 ``` r
 library(pubmedR)
 ```
+
+### Quick start with `pmCollect()`
+
+The fastest way to get PubMed data into R is `pmCollect()`, which
+handles the entire workflow in a single call:
+
+``` r
+# Collect bibliometric articles published between 2020 and 2024
+M <- pmCollect(
+  terms = "bibliometric*",
+  language = "english",
+  pub_type = "Journal Article",
+  date_range = c("2020", "2024"),
+  limit = 10
+)
+```
+
+``` r
+M[, c("AU", "PY", "TI", "SO")]
+#>                                                                                                                                                                           AU
+#> 1  LLONTO CAICEDO Y;MORÁN SANTAMARÍA RO;ALARCÓN VILLANUEVA G;ZAVALETA GONZÁLES LN;LLATAS DÍAZ WD;PACHECO GONZALES IB;PEJERREY GONZÁLEZ RJ;CASTRO MEJÍA PJ;ATALAYA URRUTIA CW
+#> 2                                                                                                                                SALEH AY;VALENTINA R;SUSANTO TD;SAPUTRA DAY
+#> 3                                                                                                    VELASQUEZ GARCIA A;MINAMI M;MEJIA-RODRÍGUEZ M;ORTÍZ-MORALES JR;RADICE F
+#> 4                                                                                                                  MUNAGA S;ALSHEHRI A;UL-HAQ I;KALAGI S;CHITUMALLA R;IYER K
+#> 5         VALENCIA-ARIAS A;CARDONA-ACEVEDO S;MARTÍNEZ ROJAS E;RAMÍREZ DÁVILA J;RODRIGUEZ-CORREA P;PALACIOS-MOYA L;TEODORI DE LA PUENTE R;AGUDELO-CEBALLOS E;BENJUMEA-ARIAS M
+#> 6                                                                                                                                   JIANG F;LI X;QIAO Q;ZHANG G;ZHANG Y;SU L
+#> 7                                                                      DYESS GA;GHALIB MA;TAYLOR Z;SABETTA Z;TAYLOR E;BUTLER D;BASSETT M;HARRIS L;BOLUS H;SHAHID A;THAKUR JD
+#> 8                                                                                                                NAVARRETE CB;CASTILLO LV;QUIÑONES AS;RODRÍGUEZ IR;MORENO LS
+#> 9                                                                                                                                                 MARTINHO VJPD;BRÓZDOWSKI J
+#> 10                                                                                                                                  PHANG KC;NG TC;SINGH SKG;VOO TC;ALVIS WA
+#>      PY
+#> 1  2025
+#> 2  2025
+#> 3  2024
+#> 4  2024
+#> 5  2025
+#> 6  2024
+#> 7  2024
+#> 8  2024
+#> 9  2025
+#> 10 2024
+#>                                                                                                                                                              TI
+#> 1                                                                        URBAN PLANNING EFFECTIVENESS AND CITIZEN SATISFACTION. A SYSTEMATIC LITERATURE REVIEW.
+#> 2                                         BEYOND STROKE THERAPY, NEUROAID (A CHINESE HERBAL) HAS AN EFFECT ON COGNITION AND NEUROGENESIS, A BIBLIOMETRIC STUDY.
+#> 3                                             LARGE LANGUAGE MODELS IN ORTHOPEDICS: AN EXPLORATORY RESEARCH TREND ANALYSIS AND MACHINE LEARNING CLASSIFICATION.
+#> 4                                                                      SAUDI ARABIA'S CONTRIBUTION TO SYSTEMATIC REVIEWS IN DENTISTRY: A BIBLIOMETRIC ANALYSIS.
+#> 5                                                                                 TRENDS IN SMART RESTAURANT RESEARCH: BIBLIOMETRIC REVIEW AND RESEARCH AGENDA.
+#> 6  KNOWLEDGE MAPPING OF ASPERGILLUS-RELATED RESEARCH IN RESPIRATORY MEDICINE: A BIBLIOMETRIC ANALYSIS BASED ON ENGLISH-LANGUAGE ARTICLES SPANNING 1975 TO 2022.
+#> 7                                                       CAREERS IN SKULL BASE AND OPEN CEREBROVASCULAR SURGERY: FACTORS ASSOCIATED WITH ACADEMIC JOB PLACEMENT.
+#> 8                                                     INTERNATIONALIZATION AND COLLABORATION IN COLOMBIAN PSYCHOLOGY DURING 2014-2023: A BIBLIOMETRIC ANALYSIS.
+#> 9                                                                                              SUGGESTIONS FOR RESIN RESEARCH UNDER THE COST ACTION EU-POTARCH.
+#> 10                              NAVIGATING ARTIFICIAL INTELLIGENCE IN MALAYSIAN HEALTHCARE: RESEARCH DEVELOPMENTS, ETHICAL DILEMMAS, AND GOVERNANCE STRATEGIES.
+#>                                                     SO
+#> 1                                        F1000RESEARCH
+#> 2                                        F1000RESEARCH
+#> 3                              JOURNAL OF ORTHOPAEDICS
+#> 4                             THE SAUDI DENTAL JOURNAL
+#> 5                                        F1000RESEARCH
+#> 6                         CANADIAN RESPIRATORY JOURNAL
+#> 7  JOURNAL OF NEUROLOGICAL SURGERY. PART B, SKULL BASE
+#> 8              PSYCHOLOGY IN RUSSIA : STATE OF THE ART
+#> 9                                 OPEN RESEARCH EUROPE
+#> 10                              ASIAN BIOETHICS REVIEW
+```
+
+You can also pass a raw query string and enable citation enrichment:
+
+``` r
+M_enriched <- pmCollect(
+  query = "bibliometric*[Title/Abstract] AND english[LA] AND 2023:2024[DP]",
+  limit = 5,
+  enrich = TRUE
+)
+```
+
+``` r
+M_enriched[, c("AU", "PY", "TC")]
+#>                                                                                                                                                                          AU
+#> 1 LLONTO CAICEDO Y;MORÁN SANTAMARÍA RO;ALARCÓN VILLANUEVA G;ZAVALETA GONZÁLES LN;LLATAS DÍAZ WD;PACHECO GONZALES IB;PEJERREY GONZÁLEZ RJ;CASTRO MEJÍA PJ;ATALAYA URRUTIA CW
+#> 2                                                                                                                               SALEH AY;VALENTINA R;SUSANTO TD;SAPUTRA DAY
+#> 3                                                                                                   VELASQUEZ GARCIA A;MINAMI M;MEJIA-RODRÍGUEZ M;ORTÍZ-MORALES JR;RADICE F
+#> 4                                                                                                                 MUNAGA S;ALSHEHRI A;UL-HAQ I;KALAGI S;CHITUMALLA R;IYER K
+#> 5        VALENCIA-ARIAS A;CARDONA-ACEVEDO S;MARTÍNEZ ROJAS E;RAMÍREZ DÁVILA J;RODRIGUEZ-CORREA P;PALACIOS-MOYA L;TEODORI DE LA PUENTE R;AGUDELO-CEBALLOS E;BENJUMEA-ARIAS M
+#>     PY TC
+#> 1 2025  0
+#> 2 2025  0
+#> 3 2024  1
+#> 4 2024  0
+#> 5 2025  0
+```
+
+For more control over each step, you can use the individual functions
+described below.
 
 ### Building a query
 
@@ -339,46 +433,52 @@ functions: `biblioAnalysis()`, `biblioNetwork()`, `thematicMap()`,
 
 ## Workflow Summary
 
-The typical pubmedR workflow follows these steps:
+The typical pubmedR workflow follows these steps. Use `pmCollect()` to
+run the full pipeline in one call, or use the individual functions for
+fine-grained control:
 
+      pmCollect()                       Individual functions
+      (one step)                        (step by step)
                                        +-------------------+
-                                       | pmQueryBuild()    |
-                                       | Build query       |
-                                       +---------+---------+
+    +----------------+                 | pmQueryBuild()    |
+    |                |                 | Build query       |
+    | pmCollect()    |                 +---------+---------+
+    |                |                           |
+    | Builds query,  |                           v
+    | counts records,|                 +-------------------+
+    | downloads,     |                 | pmQueryTotalCount()|
+    | converts,      |                 | Check result count|
+    | enriches (opt) |                 +---------+---------+
+    |                |                           |
+    +-------+--------+             +--------------+--------------+
+            |                      |                             |
+            |                      v                             v
+            |            +-------------------+         +-------------------+
+            |            | pmApiRequest()    |         | pmFetchById()     |
+            |            | Search & download |         | Download by PMID  |
+            |            +---------+---------+         +---------+---------+
+            |                      |                             |
+            |                      +-------------+---------------+
+            |                                    |
+            |                                    v
+            |                          +-------------------+
+            |                          | pmApi2df()        |
+            |                          | Convert to df     |
+            |                          +---------+---------+
+            |                                    |
+            |                                    v
+            |                          +-------------------+
+            |                          | pmEnrichCitations()|
+            |                          | Add TC & CR       |
+            |                          +---------+---------+
+            |                                    |
+            +------------------------------------+
                                                  |
                                                  v
                                        +-------------------+
-                                       | pmQueryTotalCount()|
-                                       | Check result count|
-                                       +---------+---------+
-                                                 |
-                                  +--------------+--------------+
-                                  |                             |
-                                  v                             v
-                        +-------------------+         +-------------------+
-                        | pmApiRequest()    |         | pmFetchById()     |
-                        | Search & download |         | Download by PMID  |
-                        +---------+---------+         +---------+---------+
-                                  |                             |
-                                  +-------------+---------------+
-                                                |
-                                                v
-                                      +-------------------+
-                                      | pmApi2df()        |
-                                      | Convert to df     |
-                                      +---------+---------+
-                                                |
-                                                v
-                                      +-------------------+
-                                      | pmEnrichCitations()|
-                                      | Add TC & CR       |
-                                      +---------+---------+
-                                                |
-                                                v
-                                      +-------------------+
-                                      | bibliometrix      |
-                                      | Analyze & explore |
-                                      +-------------------+
+                                       | bibliometrix      |
+                                       | Analyze & explore |
+                                       +-------------------+
 
 ## About PubMed
 

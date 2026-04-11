@@ -3,6 +3,7 @@
 export(pmApi2df)
 export(pmApiRequest)
 export(pmCitedBy)
+export(pmCollect)
 export(pmEnrichCitations)
 export(pmFetchById)
 export(pmQueryBuild)

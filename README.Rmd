@@ -40,6 +40,7 @@ It provides a complete toolkit to **search**, **download**, **convert**, and **e
 | `pmCitedBy()` | Find articles that cite a given article |
 | `pmReferences()` | Find references cited by a given article |
 | `pmEnrichCitations()` | Add citation counts and references to a data frame |
+| `pmCollect()` | One-step wrapper for the full workflow |
 
 ## Installation
 
@@ -86,6 +87,41 @@ When the API key is set via environment variable, all pubmedR functions will use
 ```{r load}
 library(pubmedR)
 ```
+
+### Quick start with `pmCollect()`
+
+The fastest way to get PubMed data into R is `pmCollect()`, which handles the entire workflow in a single call:
+
+```{r collect-simple, results='hide'}
+# Collect bibliometric articles published between 2020 and 2024
+M <- pmCollect(
+  terms = "bibliometric*",
+  language = "english",
+  pub_type = "Journal Article",
+  date_range = c("2020", "2024"),
+  limit = 10
+)
+```
+
+```{r collect-show}
+M[, c("AU", "PY", "TI", "SO")]
+```
+
+You can also pass a raw query string and enable citation enrichment:
+
+```{r collect-enrich, results='hide'}
+M_enriched <- pmCollect(
+  query = "bibliometric*[Title/Abstract] AND english[LA] AND 2023:2024[DP]",
+  limit = 5,
+  enrich = TRUE
+)
+```
+
+```{r collect-enrich-show}
+M_enriched[, c("AU", "PY", "TC")]
+```
+
+For more control over each step, you can use the individual functions described below.
 
 ### Building a query
 
@@ -254,47 +290,51 @@ The data frame produced by `pmApi2df()` uses the same field tags as bibliometrix
 
 ## Workflow Summary
 
-The typical pubmedR workflow follows these steps:
+The typical pubmedR workflow follows these steps. Use `pmCollect()` to run the full pipeline in one call, or use the individual functions for fine-grained control:
 
 ```
+  pmCollect()                       Individual functions
+  (one step)                        (step by step)
                                    +-------------------+
-                                   | pmQueryBuild()    |
-                                   | Build query       |
-                                   +---------+---------+
++----------------+                 | pmQueryBuild()    |
+|                |                 | Build query       |
+| pmCollect()    |                 +---------+---------+
+|                |                           |
+| Builds query,  |                           v
+| counts records,|                 +-------------------+
+| downloads,     |                 | pmQueryTotalCount()|
+| converts,      |                 | Check result count|
+| enriches (opt) |                 +---------+---------+
+|                |                           |
++-------+--------+             +--------------+--------------+
+        |                      |                             |
+        |                      v                             v
+        |            +-------------------+         +-------------------+
+        |            | pmApiRequest()    |         | pmFetchById()     |
+        |            | Search & download |         | Download by PMID  |
+        |            +---------+---------+         +---------+---------+
+        |                      |                             |
+        |                      +-------------+---------------+
+        |                                    |
+        |                                    v
+        |                          +-------------------+
+        |                          | pmApi2df()        |
+        |                          | Convert to df     |
+        |                          +---------+---------+
+        |                                    |
+        |                                    v
+        |                          +-------------------+
+        |                          | pmEnrichCitations()|
+        |                          | Add TC & CR       |
+        |                          +---------+---------+
+        |                                    |
+        +------------------------------------+
                                              |
                                              v
                                    +-------------------+
-                                   | pmQueryTotalCount()|
-                                   | Check result count|
-                                   +---------+---------+
-                                             |
-                              +--------------+--------------+
-                              |                             |
-                              v                             v
-                    +-------------------+         +-------------------+
-                    | pmApiRequest()    |         | pmFetchById()     |
-                    | Search & download |         | Download by PMID  |
-                    +---------+---------+         +---------+---------+
-                              |                             |
-                              +-------------+---------------+
-                                            |
-                                            v
-                                  +-------------------+
-                                  | pmApi2df()        |
-                                  | Convert to df     |
-                                  +---------+---------+
-                                            |
-                                            v
-                                  +-------------------+
-                                  | pmEnrichCitations()|
-                                  | Add TC & CR       |
-                                  +---------+---------+
-                                            |
-                                            v
-                                  +-------------------+
-                                  | bibliometrix      |
-                                  | Analyze & explore |
-                                  +-------------------+
+                                   | bibliometrix      |
+                                   | Analyze & explore |
+                                   +-------------------+
 ```
 
 ## About PubMed
