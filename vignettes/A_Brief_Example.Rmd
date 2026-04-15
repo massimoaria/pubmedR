@@ -19,7 +19,7 @@ vignette: >
 
 &nbsp;
 
-*http://github.com/massimoaria/pubmedR*
+*https://github.com/massimoaria/pubmedR*
 
 *Latest version: `r packageVersion("pubmedR")`, `r Sys.Date()`*
 
@@ -39,7 +39,7 @@ University of Naples Federico II
 
 email aria@unina.it
 
-http://www.massimoaria.com
+https://www.massimoaria.com
 
 &nbsp;
 
@@ -70,8 +70,8 @@ By default, access to the NCBI API is free and does not strictly require an API 
 Without a key, NCBI limits users to 3 requests per second; registered users with an
 API key are allowed up to 10 requests per second.
 
-To obtain a key, register for a ***"my ncbi account"*** (*https://www.ncbi.nlm.nih.gov/account/*)
-and generate one from the ***"account settings page"*** (*https://www.ncbi.nlm.nih.gov/account/settings/*).
+To obtain a key, register for a ***"my ncbi account"*** (*https://account.ncbi.nlm.nih.gov/*)
+and generate one from the ***"account settings page"*** (*https://account.ncbi.nlm.nih.gov/settings/*).
 
 You can pass the key explicitly via the `api_key` argument of any function, or -
 preferably - set it once as an environment variable. pubmedR will automatically

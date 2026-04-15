@@ -8,7 +8,7 @@
 #'
 #' @return a dataframe containing bibliographic records.
 #'
-#' To obtain a free access to NCBI API, please visit: \href{https://www.ncbi.nlm.nih.gov/pmc/tools/developers/}{https://www.ncbi.nlm.nih.gov/pmc/tools/developers/}
+#' To obtain a free access to NCBI API, please visit: \href{https://pmc.ncbi.nlm.nih.gov/tools/developers/}{https://pmc.ncbi.nlm.nih.gov/tools/developers/}
 #'
 #' To obtain more information about how to write a NCBI search query, please visit: \href{https://pubmed.ncbi.nlm.nih.gov/help/#search-tags}{https://pubmed.ncbi.nlm.nih.gov/help/#search-tags}
 #'
@@ -28,7 +28,6 @@
 #'
 #' @export
 pmApi2df <- function(P, format = "bibliometrix") {
-
   P <- P$data
 
   n <- length(P)
@@ -71,7 +70,13 @@ pmApi2df <- function(P, format = "bibliometrix") {
     stringsAsFactors = FALSE
   )
 
-  pb <- utils::txtProgressBar(min = 0, max = n, initial = 0, char = "=", style = 3)
+  pb <- utils::txtProgressBar(
+    min = 0,
+    max = n,
+    initial = 0,
+    char = "=",
+    style = 3
+  )
 
   for (i in 1:n) {
     utils::setTxtProgressBar(pb, i)
@@ -83,7 +88,9 @@ pmApi2df <- function(P, format = "bibliometrix") {
     df$LA[i] <- a["MedlineCitation.Article.Language"]
 
     ## Document Type
-    df$DT[i] <- a["MedlineCitation.Article.PublicationTypeList.PublicationType.text"]
+    df$DT[i] <- a[
+      "MedlineCitation.Article.PublicationTypeList.PublicationType.text"
+    ]
 
     ## Title
     df$TI[i] <- a["MedlineCitation.Article.ArticleTitle"]
@@ -93,12 +100,20 @@ pmApi2df <- function(P, format = "bibliometrix") {
     if (length(ind) > 0) {
       df$PY[i] <- min(as.numeric(a[ind]), na.rm = TRUE)
     }
-    df$PY_IS[i] <- a["MedlineCitation.Article.Journal.JournalIssue.PubDate.Year"]
+    df$PY_IS[i] <- a[
+      "MedlineCitation.Article.Journal.JournalIssue.PubDate.Year"
+    ]
 
     ## Authors
-    AU_last_ind <- which(items == "MedlineCitation.Article.AuthorList.Author.LastName")
-    AU_first_ind <- which(items == "MedlineCitation.Article.AuthorList.Author.ForeName")
-    AU_init_ind <- which(items == "MedlineCitation.Article.AuthorList.Author.Initials")
+    AU_last_ind <- which(
+      items == "MedlineCitation.Article.AuthorList.Author.LastName"
+    )
+    AU_first_ind <- which(
+      items == "MedlineCitation.Article.AuthorList.Author.ForeName"
+    )
+    AU_init_ind <- which(
+      items == "MedlineCitation.Article.AuthorList.Author.Initials"
+    )
 
     if (length(AU_last_ind) > 0) {
       nameAF <- paste(a[AU_last_ind], a[AU_first_ind], sep = ", ")
@@ -108,15 +123,23 @@ pmApi2df <- function(P, format = "bibliometrix") {
     }
 
     ## Affiliations - extract all author affiliations
-    Aff_name_ind <- which(items == "MedlineCitation.Article.AuthorList.Author.AffiliationInfo.Affiliation")
+    Aff_name_ind <- which(
+      items ==
+        "MedlineCitation.Article.AuthorList.Author.AffiliationInfo.Affiliation"
+    )
     if (length(Aff_name_ind) > 0) {
       Affiliations <- a[Aff_name_ind]
 
       ## Remove email addresses from affiliations
-      Affiliations <- vapply(Affiliations, function(l) {
-        parts <- unlist(strsplit(l, ", "))
-        paste(parts[!grepl("@", parts, fixed = TRUE)], collapse = ", ")
-      }, character(1), USE.NAMES = FALSE)
+      Affiliations <- vapply(
+        Affiliations,
+        function(l) {
+          parts <- unlist(strsplit(l, ", "))
+          paste(parts[!grepl("@", parts, fixed = TRUE)], collapse = ", ")
+        },
+        character(1),
+        USE.NAMES = FALSE
+      )
 
       ## Remove empty affiliations
       Affiliations <- Affiliations[nzchar(trimws(Affiliations))]
@@ -133,7 +156,9 @@ pmApi2df <- function(P, format = "bibliometrix") {
       df$DE[i] <- paste(a[DE_ind], collapse = ";")
     }
 
-    ID_ind <- which(items == "MedlineCitation.MeshHeadingList.MeshHeading.DescriptorName.text")
+    ID_ind <- which(
+      items == "MedlineCitation.MeshHeadingList.MeshHeading.DescriptorName.text"
+    )
     if (length(ID_ind) > 0) {
       df$ID[i] <- df$MESH[i] <- paste(a[ID_ind], collapse = ";")
     }
@@ -155,7 +180,9 @@ pmApi2df <- function(P, format = "bibliometrix") {
     df$SO_CO[i] <- a["MedlineCitation.MedlineJournalInfo.Country"]
 
     ## DOI
-    doi_ind <- which(items == "PubmedData.ArticleIdList.ArticleId..attrs.IdType")
+    doi_ind <- which(
+      items == "PubmedData.ArticleIdList.ArticleId..attrs.IdType"
+    )
     ind <- which(a[doi_ind] == "doi")
     if (length(ind) > 0) {
       doi_val_ind <- doi_ind[ind] - 1

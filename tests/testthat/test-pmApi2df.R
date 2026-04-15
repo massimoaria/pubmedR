@@ -8,6 +8,10 @@ test_that("pmApi2df handles empty data", {
 test_that("pmApi2df output has expected columns in bibliometrix format", {
   skip_on_cran()
   skip_if_offline()
+  skip_if_not(
+    nzchar(Sys.getenv("PUBMED_API_KEY")) || nzchar(Sys.getenv("ENTREZ_KEY")),
+    "no PubMed API key set"
+  )
 
   D <- pmApiRequest(
     query = "bibliometric*[Title/Abstract] AND english[LA] AND 2020:2020[DP]",
@@ -30,6 +34,10 @@ test_that("pmApi2df output has expected columns in bibliometrix format", {
 test_that("pmApi2df raw format does not add AU_CO columns", {
   skip_on_cran()
   skip_if_offline()
+  skip_if_not(
+    nzchar(Sys.getenv("PUBMED_API_KEY")) || nzchar(Sys.getenv("ENTREZ_KEY")),
+    "no PubMed API key set"
+  )
 
   D <- pmApiRequest(
     query = "bibliometric*[Title/Abstract] AND english[LA] AND 2020:2020[DP]",

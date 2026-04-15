@@ -13,7 +13,7 @@
 #' query_translation \tab       \tab The query translation by the NCBI Automatic Terms Translation system \cr
 #' web_history \tab      \tab The web history object. The NCBI provides search history features, which is useful for dealing with large lists of IDs or repeated searches.}
 #'
-#' To obtain a free access to NCBI API, please visit: \href{https://www.ncbi.nlm.nih.gov/pmc/tools/developers/}{https://www.ncbi.nlm.nih.gov/pmc/tools/developers/}
+#' To obtain a free access to NCBI API, please visit: \href{https://pmc.ncbi.nlm.nih.gov/tools/developers/}{https://pmc.ncbi.nlm.nih.gov/tools/developers/}
 #'
 #'
 #' @examples
@@ -29,7 +29,6 @@
 #'
 #' @export
 pmQueryTotalCount <- function(query, api_key = NULL) {
-
   api_key <- get_api_key(api_key)
 
   ## Validate query

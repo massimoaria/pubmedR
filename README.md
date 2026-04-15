@@ -63,11 +63,10 @@ second**.
 
 To obtain a free API key:
 
-1.  Register for a [My NCBI
-    account](https://www.ncbi.nlm.nih.gov/account/)
+1.  Register for a [My NCBI account](https://account.ncbi.nlm.nih.gov/)
 2.  Go to your [Account
-    Settings](https://www.ncbi.nlm.nih.gov/account/settings/) and
-    generate an API key
+    Settings](https://account.ncbi.nlm.nih.gov/settings/) and generate
+    an API key
 
 You can set the API key in three ways (in order of priority):
 

@@ -21,7 +21,7 @@
 #' records_downloaded \tab \tab It is an integer object indicating the total number of records downloaded and stored in "data".\cr
 #' total_count \tab \tab It is an integer object indicating the total number of records matching the query (stored in the "query_translation" object").}
 #'
-#' To obtain a free access to NCBI API, please visit: \href{https://www.ncbi.nlm.nih.gov/pmc/tools/developers/}{https://www.ncbi.nlm.nih.gov/pmc/tools/developers/}
+#' To obtain a free access to NCBI API, please visit: \href{https://pmc.ncbi.nlm.nih.gov/tools/developers/}{https://pmc.ncbi.nlm.nih.gov/tools/developers/}
 #'
 #' To obtain more information about how to write a NCBI search query, please visit: \href{https://pubmed.ncbi.nlm.nih.gov/help/#search-tags}{https://pubmed.ncbi.nlm.nih.gov/help/#search-tags}
 #'
@@ -42,7 +42,6 @@
 #' @import rentrez
 
 pmApiRequest <- function(query, limit, api_key = NULL, batch_size = 200) {
-
   api_key <- get_api_key(api_key)
 
   ## query total count
@@ -68,7 +67,13 @@ pmApiRequest <- function(query, limit, api_key = NULL, batch_size = 200) {
   n_batches <- ceiling(n / step)
 
   cat("\nDownloading", n, "documents from PubMed...\n")
-  pb <- utils::txtProgressBar(min = 0, max = n, initial = 0, char = "=", style = 3)
+  pb <- utils::txtProgressBar(
+    min = 0,
+    max = n,
+    initial = 0,
+    char = "=",
+    style = 3
+  )
 
   ## download metadata in batches
   while (s < n) {

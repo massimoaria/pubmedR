@@ -26,7 +26,7 @@ query_translation \tab \tab It a character object containing the query, translat
 records_downloaded \tab \tab It is an integer object indicating the total number of records downloaded and stored in "data".\cr
 total_count \tab \tab It is an integer object indicating the total number of records matching the query (stored in the "query_translation" object").}
 
-To obtain a free access to NCBI API, please visit: \href{https://www.ncbi.nlm.nih.gov/pmc/tools/developers/}{https://www.ncbi.nlm.nih.gov/pmc/tools/developers/}
+To obtain a free access to NCBI API, please visit: \href{https://pmc.ncbi.nlm.nih.gov/tools/developers/}{https://pmc.ncbi.nlm.nih.gov/tools/developers/}
 
 To obtain more information about how to write a NCBI search query, please visit: \href{https://pubmed.ncbi.nlm.nih.gov/help/#search-tags}{https://pubmed.ncbi.nlm.nih.gov/help/#search-tags}
 }

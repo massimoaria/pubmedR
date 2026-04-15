@@ -13,6 +13,10 @@ test_that("pmQueryTotalCount rejects blank query", {
 test_that("pmQueryTotalCount returns results for valid query", {
   skip_on_cran()
   skip_if_offline()
+  skip_if_not(
+    nzchar(Sys.getenv("PUBMED_API_KEY")) || nzchar(Sys.getenv("ENTREZ_KEY")),
+    "no PubMed API key set"
+  )
 
   result <- pmQueryTotalCount(
     query = "bibliometric*[Title/Abstract] AND english[LA] AND 2020:2020[DP]",
