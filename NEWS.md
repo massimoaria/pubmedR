@@ -1,3 +1,5 @@
+# pubmedR 1.0.0
+
 # pubmedR 0.1.0.900
 
 ## New functions
