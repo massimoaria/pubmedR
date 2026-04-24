@@ -59,6 +59,7 @@ pmApi2df <- function(P, format = "bibliometrix") {
     PY = NA_integer_,
     PY_IS = NA_character_,
     VL = NA_character_,
+    IS = NA_character_,
     DI = NA_character_,
     PG = NA_character_,
     GRANT_ID = NA_character_,
@@ -207,6 +208,9 @@ pmApi2df <- function(P, format = "bibliometrix") {
 
     ## Volume
     df$VL[i] <- a["MedlineCitation.Article.Journal.JournalIssue.Volume"]
+
+    ## Issue
+    df$IS[i] <- a["MedlineCitation.Article.Journal.JournalIssue.Issue"]
 
     ## PMID
     df$UT[i] <- df$PMID[i] <- a["MedlineCitation.PMID.text"]
