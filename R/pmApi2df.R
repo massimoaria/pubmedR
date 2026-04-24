@@ -78,11 +78,21 @@ pmApi2df <- function(P, format = "bibliometrix") {
     style = 3
   )
 
+  record_types <- names(P)
+  if (is.null(record_types)) record_types <- rep(NA_character_, n)
+
   for (i in 1:n) {
     utils::setTxtProgressBar(pb, i)
 
     a <- list2char(P[[i]])
     items <- names(a)
+
+    ## Dispatch on record type: book chapters use a different XML structure
+    if (identical(record_types[i], "PubmedBookArticle")) {
+      row <- extract_book_article(a, items)
+      for (col in names(row)) df[[col]][i] <- row[[col]]
+      next
+    }
 
     ## Language
     df$LA[i] <- a["MedlineCitation.Article.Language"]
@@ -229,8 +239,25 @@ pmApi2df <- function(P, format = "bibliometrix") {
   df$TC <- as.numeric(df$TC)
   df$TC[is.na(df$TC)] <- 0
 
-  ### Remove empty rows (no Document Type)
-  df <- df[!is.na(df$DT), ]
+  ### Remove empty rows (no Document Type) and report them
+  missing_idx <- which(is.na(df$DT))
+  if (length(missing_idx) > 0) {
+    dropped_pmids <- df$PMID[missing_idx]
+    dropped_pmids <- dropped_pmids[!is.na(dropped_pmids) & nzchar(dropped_pmids)]
+    if (length(dropped_pmids) > 0) {
+      message(sprintf(
+        "Dropped %d record(s) with no Document Type. PMID: %s",
+        length(missing_idx),
+        paste(dropped_pmids, collapse = ", ")
+      ))
+    } else {
+      message(sprintf(
+        "Dropped %d record(s) with no Document Type (PMID not extractable).",
+        length(missing_idx)
+      ))
+    }
+    df <- df[-missing_idx, ]
+  }
 
   return(df)
 }

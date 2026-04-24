@@ -69,6 +69,129 @@ api_throttle <- function(api_key = NULL, last_request_time = NULL) {
 }
 
 
+#' Extract fields from a PubmedBookArticle flattened record
+#'
+#' Maps the \code{BookDocument.*} / \code{PubmedBookData.*} XML structure
+#' (used by GeneReviews, StatPearls, etc.) onto the same data frame columns
+#' produced for \code{PubmedArticle} records.
+#'
+#' @param a A named character vector from \code{list2char}.
+#' @param items \code{names(a)}.
+#' @return A named list of column values for a single row.
+#' @noRd
+extract_book_article <- function(a, items) {
+  row <- list()
+
+  ## Language
+  row$LA <- a["BookDocument.Language"]
+
+  ## Document Type
+  dt <- a["BookDocument.PublicationType.text"]
+  if (is.na(dt)) dt <- "BOOK CHAPTER"
+  row$DT <- dt
+
+  ## Title (chapter)
+  ti <- a["BookDocument.ArticleTitle.text"]
+  if (is.na(ti)) ti <- a["BookDocument.ArticleTitle"]
+  row$TI <- ti
+
+  ## Publication Year: History first, then ContributionDate, then Book.PubDate
+  ind <- which(items == "PubmedBookData.History.PubMedPubDate.Year")
+  if (length(ind) > 0) {
+    row$PY <- suppressWarnings(min(as.numeric(a[ind]), na.rm = TRUE))
+  } else {
+    py <- a["BookDocument.ContributionDate.Year"]
+    if (is.na(py)) py <- a["BookDocument.Book.PubDate.Year"]
+    if (!is.na(py)) row$PY <- as.numeric(py)
+  }
+  row$PY_IS <- a["BookDocument.Book.PubDate.Year"]
+
+  ## Authors of the chapter (NOT the Book's editors under Book.AuthorList)
+  AU_last_ind <- which(items == "BookDocument.AuthorList.Author.LastName")
+  AU_first_ind <- which(items == "BookDocument.AuthorList.Author.ForeName")
+  AU_init_ind <- which(items == "BookDocument.AuthorList.Author.Initials")
+  if (length(AU_last_ind) > 0) {
+    nameAF <- paste(a[AU_last_ind], a[AU_first_ind], sep = ", ")
+    nameAU <- paste(a[AU_last_ind], a[AU_init_ind], sep = " ")
+    row$AF <- paste(nameAF, collapse = ";")
+    row$AU <- paste(nameAU, collapse = ";")
+  }
+
+  ## Affiliations
+  Aff_name_ind <- which(
+    items == "BookDocument.AuthorList.Author.AffiliationInfo.Affiliation"
+  )
+  if (length(Aff_name_ind) > 0) {
+    Affiliations <- a[Aff_name_ind]
+    Affiliations <- vapply(
+      Affiliations,
+      function(l) {
+        parts <- unlist(strsplit(l, ", "))
+        paste(parts[!grepl("@", parts, fixed = TRUE)], collapse = ", ")
+      },
+      character(1),
+      USE.NAMES = FALSE
+    )
+    Affiliations <- Affiliations[nzchar(trimws(Affiliations))]
+    unique_aff <- unique(Affiliations)
+    row$C1 <- paste(unique_aff, collapse = ";")
+    row$AU_UN <- row$C1
+  }
+
+  ## Keywords
+  DE_ind <- which(items == "BookDocument.KeywordList.Keyword.text")
+  if (length(DE_ind) > 0) {
+    row$DE <- paste(a[DE_ind], collapse = ";")
+  }
+
+  ## Abstract
+  ind <- which(items == "BookDocument.Abstract.AbstractText.text")
+  if (length(ind) > 0) {
+    row$AB <- paste(a[ind], collapse = " ")
+  } else {
+    ind <- which(items == "BookDocument.Abstract.AbstractText")
+    if (length(ind) > 0) {
+      row$AB <- paste(a[ind], collapse = " ")
+    }
+  }
+
+  ## Source = Book title
+  book_title <- a["BookDocument.Book.BookTitle.text"]
+  if (is.na(book_title)) book_title <- a["BookDocument.Book.BookTitle"]
+  row$SO <- book_title
+  row$JI <- book_title
+  row$J9 <- book_title
+
+  ## Country / publisher location
+  row$SO_CO <- a["BookDocument.Book.Publisher.PublisherLocation"]
+
+  ## DOI (usually absent on book chapters but possible)
+  doi_ind <- which(
+    items == "PubmedBookData.ArticleIdList.ArticleId..attrs.IdType"
+  )
+  ind <- which(a[doi_ind] == "doi")
+  if (length(ind) > 0) {
+    doi_val_ind <- doi_ind[ind] - 1
+    row$DI <- a[doi_val_ind]
+  }
+
+  ## PMID
+  row$UT <- row$PMID <- a["BookDocument.PMID.text"]
+
+  ## Grants
+  GR_ID <- which(items == "BookDocument.GrantList.Grant.GrantID")
+  if (length(GR_ID) > 0) {
+    row$GRANT_ID <- paste(a[GR_ID], collapse = ";")
+  }
+  GR_ORG <- which(items == "BookDocument.GrantList.Grant.Agency")
+  if (length(GR_ORG) > 0) {
+    row$GRANT_ORG <- paste(a[GR_ORG], collapse = ";")
+  }
+
+  row
+}
+
+
 #' Execute an API call with retry logic
 #'
 #' Wraps an expression with error handling and exponential backoff retry.
