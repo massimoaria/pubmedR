@@ -1,3 +1,5 @@
+# pubmedR 1.0.2
+
 # pubmedR 1.0.1
 
 ## Bug fixes
