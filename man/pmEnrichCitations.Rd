@@ -4,45 +4,79 @@
 \alias{pmEnrichCitations}
 \title{Enrich a PubMed dataframe with citation data}
 \usage{
-pmEnrichCitations(df, api_key = NULL)
+pmEnrichCitations(
+  df,
+  P = NULL,
+  api_key = NULL,
+  resolve_pmids = TRUE,
+  only_multiple = FALSE,
+  include_TC = TRUE,
+  batch_size = 200
+)
 }
 \arguments{
-\item{df}{is a dataframe. A bibliometric dataframe produced by \code{\link{pmApi2df}}.}
+\item{df}{is a dataframe. A bibliometric dataframe produced by
+\code{\link{pmApi2df}}.}
 
-\item{api_key}{is a character. It contains a valid API key for the NCBI E-utilities.
-Default is \code{api_key=NULL}. The API key can also be set via the environment variable
-\code{PUBMED_API_KEY} or \code{ENTREZ_KEY}.}
+\item{P}{is the optional list returned by \code{\link{pmApiRequest}} or
+\code{\link{pmFetchById}} that produced \code{df}. Reuse it to avoid an
+extra round-trip when references are already available. If \code{NULL},
+the function calls \code{pmFetchById} on \code{df$PMID} to retrieve the
+underlying XML.}
+
+\item{api_key}{is a character. It contains a valid API key for the NCBI
+E-utilities. Default is \code{api_key=NULL}. The API key can also be set
+via the environment variable \code{PUBMED_API_KEY} or \code{ENTREZ_KEY}.}
+
+\item{resolve_pmids}{logical. When \code{TRUE} (default) the function fetches
+metadata for every cited PMID present in the references and assembles
+structured WoS-style citation strings ("AUTHOR YYYY, JOURNAL, V##, P##,
+DOI ..."). When \code{FALSE} the free-text \code{<Citation>} block from
+the XML is used as-is.}
+
+\item{only_multiple}{logical. When \code{TRUE} only references cited by more
+than one source article are resolved to metadata (faster and cheaper).
+References not resolved keep their free-text citation. Defaults to
+\code{FALSE}.}
+
+\item{include_TC}{logical. When \code{TRUE} (default) also call
+\code{\link{pmCitedBy}} for each source article and write the citation
+count to \code{df$TC}. Disable to skip this step.}
+
+\item{batch_size}{integer. Number of records per API call when fetching
+metadata. Defaults to 200 (NCBI's hard cap for efetch).}
 }
 \value{
-The input dataframe with updated CR (Cited References) and TC (Times Cited) fields.
+The input dataframe with updated \code{CR} (cited references),
+  \code{NR} (number of references), and \code{TC} (times cited, if
+  \code{include_TC = TRUE}) fields.
 }
 \description{
-It adds cited references (CR field) and citation counts (TC field)
-to a dataframe created by \code{\link{pmApi2df}}, using NCBI E-Link data.
+Adds cited references (CR field), reference counts (NR field), and
+optionally citation counts (TC field) to a dataframe created by
+\code{\link{pmApi2df}}.
 }
 \details{
-This function iterates over each record in the dataframe and queries NCBI E-Link
-to retrieve: (1) The PMIDs of references cited by each article (populates CR field),
-and (2) The count of articles citing each article (populates TC field).
-
-Note: This process makes two API calls per article and can be slow for large datasets.
-An API key is strongly recommended.
+Cited references are extracted from the article's PubMed XML
+(\code{<ReferenceList>}). This is more reliable than the previous E-Link
+\code{pubmed_pubmed_refs} approach, which only worked for articles
+deposited in PMC. References whose XML carries an \code{ArticleId}
+\code{IdType="pubmed"} are resolved to bibliographic metadata in
+batched \code{efetch} requests so that \code{CR} matches the WoS
+convention used by bibliometrix; references with only free-text citations
+are kept verbatim (uppercased).
 }
 \examples{
-
 \donttest{
 query <- "bibliometric*[Title/Abstract] AND english[LA]
          AND Journal Article[PT] AND 2000:2020[DP]"
 D <- pmApiRequest(query = query, limit = 10, api_key = NULL)
 M <- pmApi2df(D)
-M <- pmEnrichCitations(M)
+M <- pmEnrichCitations(M, P = D)        # avoid the extra fetch
 }
 
 }
 \seealso{
-\code{\link{pmCitedBy}}
-
-\code{\link{pmReferences}}
-
-\code{\link{pmApi2df}}
+\code{\link{pmExtractReferences}}, \code{\link{pmCitedBy}},
+  \code{\link{pmFetchById}}, \code{\link{pmApi2df}}
 }

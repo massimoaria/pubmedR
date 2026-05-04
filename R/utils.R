@@ -192,6 +192,150 @@ extract_book_article <- function(a, items) {
 }
 
 
+#' Null-coalescing operator
+#' @noRd
+`%||%` <- function(a, b) if (is.null(a)) b else a
+
+
+#' Extract the source PMID from a parsed XML record
+#'
+#' Handles both \code{PubmedArticle} and \code{PubmedBookArticle} structures.
+#'
+#' @param rec A single record from \code{pmApiRequest()$data} or
+#'   \code{pmFetchById()$data}.
+#' @return A character PMID, or \code{NA_character_} if not found.
+#' @noRd
+extract_record_pmid <- function(rec) {
+  pm <- rec$MedlineCitation$PMID
+  if (is.null(pm)) pm <- rec$BookDocument$PMID
+  if (is.null(pm)) return(NA_character_)
+  if (is.list(pm)) pm <- pm$text %||% pm[[1]]
+  pm <- as.character(pm)
+  if (length(pm) == 0 || !nzchar(pm)) NA_character_ else pm[1]
+}
+
+
+#' Extract references from a parsed XML record
+#'
+#' Walks \code{PubmedData$ReferenceList} (or \code{PubmedBookData$ReferenceList})
+#' and returns one row per cited \code{<Reference>}. Each row carries the
+#' free-text citation plus PMID / DOI parsed from any \code{<ArticleIdList>}.
+#'
+#' @param rec A single record from \code{pmApiRequest()$data} or
+#'   \code{pmFetchById()$data}.
+#' @return A data.frame with columns \code{citation}, \code{pmid}, \code{doi}.
+#' @noRd
+extract_refs_from_record <- function(rec) {
+  refs <- rec$PubmedData$ReferenceList
+  if (is.null(refs)) refs <- rec$PubmedBookData$ReferenceList
+  if (is.null(refs) || length(refs) == 0) return(empty_refs_df())
+
+  out <- vector("list", length(refs))
+  k <- 0L
+  for (j in seq_along(refs)) {
+    if (!identical(names(refs)[j], "Reference")) next
+    r <- refs[[j]]
+
+    citation <- r$Citation
+    if (is.list(citation)) citation <- citation$text %||% paste(unlist(citation), collapse = " ")
+    citation <- if (is.null(citation)) NA_character_ else as.character(citation)
+
+    pmid <- NA_character_
+    doi <- NA_character_
+    aid_list <- r$ArticleIdList
+    if (!is.null(aid_list)) {
+      for (m in seq_along(aid_list)) {
+        if (!identical(names(aid_list)[m], "ArticleId")) next
+        ai <- aid_list[[m]]
+        if (is.list(ai)) {
+          id_val  <- ai$text %||% ai[[1]]
+          id_type <- if (!is.null(ai$.attrs)) ai$.attrs[["IdType"]] else NULL
+        } else {
+          id_val  <- as.character(ai)
+          id_type <- attr(ai, "IdType")
+        }
+        if (is.null(id_type) || is.null(id_val)) next
+        if (identical(id_type, "pubmed") && is.na(pmid)) pmid <- as.character(id_val)
+        if (identical(id_type, "doi")    && is.na(doi))  doi  <- as.character(id_val)
+      }
+    }
+
+    k <- k + 1L
+    out[[k]] <- data.frame(
+      citation = citation,
+      pmid = pmid,
+      doi = doi,
+      stringsAsFactors = FALSE
+    )
+  }
+  if (k == 0L) return(empty_refs_df())
+  do.call(rbind, out[seq_len(k)])
+}
+
+
+#' Empty references data.frame schema
+#' @noRd
+empty_refs_df <- function() {
+  data.frame(
+    citation = character(0),
+    pmid = character(0),
+    doi = character(0),
+    stringsAsFactors = FALSE
+  )
+}
+
+
+#' Build a WoS-style CR string from a \code{pmApi2df} row
+#'
+#' Produces "AUTHOR YYYY, JOURNAL ABBREV, V##, P##, DOI ..." as understood by
+#' downstream bibliometrix functions.
+#'
+#' @param row A list (or one-row data.frame coerced to list) with at least the
+#'   AU/PY/J9/JI/VL/PG/DI columns produced by \code{pmApi2df}.
+#' @return Character WoS-style citation, or \code{NA_character_} when nothing
+#'   meaningful can be derived.
+#' @noRd
+build_wos_cr_string <- function(row) {
+  parts <- character(0)
+
+  AU <- row$AU
+  if (!is.null(AU) && !is.na(AU) && nzchar(AU)) {
+    first_au <- trimws(strsplit(AU, ";", fixed = TRUE)[[1]][1])
+    if (length(first_au) && !is.na(first_au) && nzchar(first_au)) {
+      parts <- c(parts, toupper(first_au))
+    }
+  }
+
+  PY <- row$PY
+  if (!is.null(PY) && !is.na(PY) && nzchar(as.character(PY))) {
+    parts <- c(parts, as.character(PY))
+  }
+
+  src <- row$J9
+  if (is.null(src) || is.na(src) || !nzchar(src)) src <- row$JI
+  if (is.null(src) || is.na(src) || !nzchar(src)) src <- row$SO
+  if (!is.null(src) && !is.na(src) && nzchar(src)) parts <- c(parts, toupper(src))
+
+  VL <- row$VL
+  if (!is.null(VL) && !is.na(VL) && nzchar(VL)) parts <- c(parts, paste0("V", VL))
+
+  PG <- row$PG
+  if (!is.null(PG) && !is.na(PG) && nzchar(PG)) {
+    fp <- trimws(strsplit(PG, "-", fixed = TRUE)[[1]][1])
+    if (length(fp) && !is.na(fp) && nzchar(fp)) parts <- c(parts, paste0("P", fp))
+  }
+
+  DI <- row$DI
+  if (!is.null(DI) && !is.na(DI) && nzchar(DI)) {
+    doi_clean <- gsub("^https?://doi\\.org/", "", DI)
+    parts <- c(parts, paste0("DOI ", toupper(doi_clean)))
+  }
+
+  if (length(parts) == 0) return(NA_character_)
+  paste(parts, collapse = ", ")
+}
+
+
 #' Execute an API call with retry logic
 #'
 #' Wraps an expression with error handling and exponential backoff retry.

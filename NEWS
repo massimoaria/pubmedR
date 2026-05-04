@@ -1,3 +1,42 @@
+# pubmedR 1.0.1
+
+## Bug fixes
+
+* `pmEnrichCitations()` no longer relies on the NCBI E-Link
+  `pubmed_pubmed_refs` link, which only resolves references for articles
+  whose full text is deposited in PMC. The function now extracts cited
+  references directly from the PubMed XML `<ReferenceList>` block, which is
+  populated for the majority of recent articles. CR coverage on typical
+  bibliographic queries improved from a few percent to almost full coverage
+  on tested samples.
+
+## New functions
+
+* `pmExtractReferences()`: parse a PubMed XML payload (the result of
+  `pmApiRequest()` or `pmFetchById()`) and return a tidy data frame of
+  references, one row per cited reference, with the source PMID, the raw
+  `<Citation>` text, and any embedded PubMed/DOI identifiers.
+
+## Improvements
+
+* `pmEnrichCitations()` gains the arguments `P` (reuse a previously
+  downloaded XML payload to avoid an extra `efetch` round-trip),
+  `resolve_pmids` (resolve cited PMIDs to WoS-style "AUTHOR YEAR, JOURNAL,
+  V, P, DOI" citation strings via batched `efetch`), `only_multiple` (only
+  resolve references cited by more than one source article), `include_TC`
+  (toggle the slower per-article cited-by lookup), and `batch_size`
+  (forwarded to `pmFetchById()`).
+
+* CR strings produced by `pmEnrichCitations()` are now compatible with the
+  WoS conventions parsed by `bibliometrix` (`citations()`,
+  `histNetwork()`, ...). References for which only a free-text `<Citation>`
+  is available are kept verbatim (uppercased).
+
+* `pmEnrichCitations()` now also writes the number of references for each
+  article into the `NR` column.
+
+# pubmedR 1.0.0
+
 # pubmedR 0.1.0.900
 
 ## New functions
