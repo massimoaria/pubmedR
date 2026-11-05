@@ -1,0 +1,327 @@
+# pubmedR
+
+### An R-package to gather bibliographic data from PubMed.
+
+ 
+
+    The goal of pubmedR is to gather metadata about publications, grants and
+    clinical trials from the PubMed database using NCBI REST APIs.
+
+ 
+
+*<https://github.com/massimoaria/pubmedR>*
+
+*Latest version: 1.0.2.9000, 2026-11-05*
+
+ 
+
+**by Massimo Aria**
+
+Full Professor in Social Statistics
+
+PhD in Computational Statistics
+
+Laboratory and Research Group STAD Statistics, Technology, Data Analysis
+
+Department of Economics and Statistics
+
+University of Naples Federico II
+
+email <aria@unina.it>
+
+<https://www.massimoaria.com>
+
+ 
+
+### Installation
+
+You can install the development version of pubmedR from
+[GitHub](https://github.com) with:
+
+    install.packages("devtools")
+    devtools::install_github("massimoaria/pubmedR")
+
+You can install the released version of pubmedR from
+[CRAN](https://CRAN.R-project.org) with:
+
+    install.packages("pubmedR")
+
+ 
+
+### Load the package
+
+    library(pubmedR)
+
+ 
+
+### NCBI API key
+
+By default, access to the NCBI API is free and does not strictly require
+an API key. Without a key, NCBI limits users to 3 requests per second;
+registered users with an API key are allowed up to 10 requests per
+second.
+
+To obtain a key, register for a ***“my ncbi account”***
+(*<https://account.ncbi.nlm.nih.gov/>*) and generate one from the
+***“account settings page”***
+(*<https://account.ncbi.nlm.nih.gov/settings/>*).
+
+You can pass the key explicitly via the `api_key` argument of any
+function, or - preferably - set it once as an environment variable.
+pubmedR will automatically pick it up from `PUBMED_API_KEY` or
+`ENTREZ_KEY`:
+
+    # option 1: pass it explicitly
+    api_key <- "your API key"
+
+    # option 2: set it once per session (or in ~/.Renviron)
+    Sys.setenv(PUBMED_API_KEY = "your API key")
+
+    # no key
+    api_key <- NULL
+
+ 
+
+## A brief example
+
+Imagine we want to download a metadata collection of journal articles
+that (1) use bibliometric approaches, (2) were published in the last two
+decades, and (3) are written in English.
+
+Since version 0.1.0, pubmedR offers **two equivalent workflows**:
+
+- a **step-by-step workflow** (`pmQueryBuild` → `pmQueryTotalCount` →
+  `pmApiRequest` → `pmApi2df`), which gives you full control over each
+  stage;
+- a **one-step workflow** via
+  [`pmCollect()`](https://massimoaria.github.io/pubmedR/reference/pmCollect.md),
+  a convenience wrapper that chains the whole pipeline in a single call
+  and optionally enriches the result with citation data.
+
+ 
+
+### One-step workflow: `pmCollect()`
+
+For most use cases,
+[`pmCollect()`](https://massimoaria.github.io/pubmedR/reference/pmCollect.md)
+is the fastest way to go from a query to a bibliometrix-ready data
+frame. It builds the query, checks the total count, downloads the
+records, converts the XML into a data frame, and (optionally) adds
+citation counts and cited references.
+
+    library(pubmedR)
+
+    M <- pmCollect(
+      terms      = "bibliometric*",
+      fields     = "Title/Abstract",
+      language   = "english",
+      pub_type   = "Journal Article",
+      date_range = c("2000", "2020"),
+      limit      = 2000,
+      api_key    = NULL
+    )
+
+    # Query: (bibliometric*[Title/Abstract]) AND english[LA] AND
+    #        Journal Article[PT] AND 2000:2020[DP]
+    #
+    # Total records found: 2921
+    # Records to download: 2000
+
+You can also pass a raw PubMed query string directly:
+
+    M <- pmCollect(
+      query   = "bibliometric*[Title/Abstract] AND english[LA] AND 2023:2024[DP]",
+      limit   = 200
+    )
+
+Set `enrich = TRUE` to add citation counts (`TC`) and cited references
+(`CR`) via
+[`pmEnrichCitations()`](https://massimoaria.github.io/pubmedR/reference/pmEnrichCitations.md).
+Note that enrichment adds two API calls per record, so it is best used
+on smaller collections:
+
+    M <- pmCollect(
+      terms      = "bibliometric*",
+      date_range = c("2023", "2024"),
+      limit      = 50,
+      enrich     = TRUE
+    )
+
+ 
+
+### Step-by-step workflow
+
+If you prefer fine-grained control - for example to inspect the
+translated query before downloading - you can run the pipeline one stage
+at a time.
+
+#### Step 1: Build the query
+
+Instead of writing the Entrez query string by hand, you can use
+[`pmQueryBuild()`](https://massimoaria.github.io/pubmedR/reference/pmQueryBuild.md)
+to compose it programmatically from parameters:
+
+    query <- pmQueryBuild(
+      terms      = "bibliometric*",
+      fields     = "Title/Abstract",
+      language   = "english",
+      pub_type   = "Journal Article",
+      date_range = c("2000", "2020")
+    )
+
+    query
+    # [1] "(bibliometric*[Title/Abstract]) AND english[LA] AND
+    #      Journal Article[PT] AND 2000:2020[DP]"
+
+Of course, you can still write the query manually if you prefer:
+
+    query <- "bibliometric*[Title/Abstract] AND english[LA] AND Journal Article[PT] AND 2000:2020[DP]"
+
+ 
+
+#### Step 2: Check the effectiveness of the query
+
+Use
+[`pmQueryTotalCount()`](https://massimoaria.github.io/pubmedR/reference/pmQueryTotalCount.md)
+to see how many records PubMed would return, along with the
+automatically translated query:
+
+    res <- pmQueryTotalCount(query = query, api_key = api_key)
+
+    res$total_count
+    # [1] 2921
+
+    res$query_translation
+    # [1] "(bibliometric[Title/Abstract] OR bibliometrica[Title/Abstract] OR
+    #      ... OR bibliometricstrade[Title/Abstract]) AND english[LA] AND
+    #      Journal Article[PT] AND 2000[PDAT] : 2020[PDAT]"
+
+ 
+
+#### Step 3: Download the collection of document metadata
+
+You can now download the whole collection (or a subset, by lowering
+`limit`):
+
+    D <- pmApiRequest(query = query, limit = res$total_count, api_key = api_key)
+
+    # Documents  200  of  2921
+    # Documents  400  of  2921
+    # ...
+    # Documents  2921  of  2921
+
+[`pmApiRequest()`](https://massimoaria.github.io/pubmedR/reference/pmApiRequest.md)
+returns a list with the following elements:
+
+- **`data`** - the XML-structured list containing the bibliographic
+  metadata collection downloaded from PubMed.
+- **`query`** - the original query submitted by the user.
+- **`query_translation`** - the query as translated and executed by
+  NCBI’s Automatic Terms Translation system.
+- **`records_downloaded`** - number of records actually downloaded.
+- **`total_count`** - total number of records matching the query.
+
+ 
+
+#### Step 4: Convert the XML object into a data frame
+
+Finally, transform the XML-structured object `D` into a data frame where
+rows are documents and columns are field tags compatible with the
+**bibliometrix R package**
+(<https://CRAN.R-project.org/package=bibliometrix>,
+<https://bibliometrix.org/>).
+
+    M <- pmApi2df(D, format = "bibliometrix")
+
+    str(M)
+    # 'data.frame':   2918 obs. of  27 variables:
+    #  $ AU    : chr  ...
+    #  $ AF    : chr  ...
+    #  $ TI    : chr  ...
+    #  $ SO    : chr  ...
+    #  $ LA    : chr  ...
+    #  $ DT    : chr  ...
+    #  $ DE    : chr  ...
+    #  $ AB    : chr  ...
+    #  $ C1    : chr  ...
+    #  $ TC    : num  ...
+    #  $ PY    : num  ...
+    #  $ DI    : chr  ...
+    #  $ PMID  : chr  ...
+    #  ...
+
+Setting `format = "raw"` returns the data frame with all fields in their
+native PubMed form instead of the bibliometrix-style field tags.
+
+ 
+
+### Fetching records by PMID
+
+If you already know which articles you want, you can bypass the query
+step and download records directly by their PubMed identifiers with
+[`pmFetchById()`](https://massimoaria.github.io/pubmedR/reference/pmFetchById.md):
+
+    pmids <- c("34813985", "34813456", "34812345")
+    D <- pmFetchById(pmids = pmids, api_key = api_key)
+    M <- pmApi2df(D)
+
+The returned object follows the same structure as
+[`pmApiRequest()`](https://massimoaria.github.io/pubmedR/reference/pmApiRequest.md),
+so it can be fed into
+[`pmApi2df()`](https://massimoaria.github.io/pubmedR/reference/pmApi2df.md)
+exactly the same way.
+
+ 
+
+### Citation enrichment
+
+pubmedR exposes three helpers to retrieve citation information via
+NCBI’s E-Link service (based on PubMed Central):
+
+- `pmCitedBy(pmid)` - returns the PMIDs of articles citing the given
+  article;
+- `pmReferences(pmid)` - returns the PMIDs of articles referenced by the
+  given article;
+- `pmEnrichCitations(df)` - adds a `TC` (times cited) column and a `CR`
+  (cited references) column to a pubmedR data frame.
+
+Example:
+
+    cites <- pmCitedBy(pmid = "25824007")
+    cites$count
+    cites$cited_by
+
+    refs <- pmReferences(pmid = "25824007")
+    refs$count
+    refs$references
+
+    # Add citation counts and references to an existing data frame
+    M_enriched <- pmEnrichCitations(M, api_key = api_key)
+
+Note: citation data in PubMed comes from PubMed Central and is less
+comprehensive than commercial databases such as Web of Science or
+Scopus.
+
+ 
+
+### An overview of the collection using bibliometrix
+
+Once you have a data frame `M`, you can use **bibliometrix** for
+descriptive and network analyses
+(<https://CRAN.R-project.org/package=bibliometrix>,
+<https://bibliometrix.org/>).
+
+    install.packages("bibliometrix")
+    library(bibliometrix)
+
+    results <- biblioAnalysis(M)
+    summary(results)
+
+    # Main Information about data
+    #
+    #  Documents                             2918
+    #  Sources (Journals, Books, etc.)       1275
+    #  Keywords Plus (ID)                    2245
+    #  Author's Keywords (DE)                4212
+    #  Period                                2000 - 2020
+    #  ...
