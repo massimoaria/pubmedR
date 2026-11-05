@@ -16,13 +16,10 @@
 #' To obtain a free access to NCBI API, please visit: \href{https://pmc.ncbi.nlm.nih.gov/tools/developers/}{https://pmc.ncbi.nlm.nih.gov/tools/developers/}
 #'
 #'
-#' @examples
-#'
-#' \donttest{
+#' @examplesIf interactive()
 #' query <- "bibliometric*[Title/Abstract] AND english[LA]
 #'            AND Journal Article[PT] AND 2000:2020[DP]"
 #' D <- pmQueryTotalCount(query = query, api_key = NULL)
-#' }
 #'
 #' @seealso \code{\link{pmApiRequest}}
 #' @seealso \code{\link{pmApi2df}}

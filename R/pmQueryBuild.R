@@ -7,8 +7,10 @@
 #' @param fields is a character or character vector. PubMed search tags to apply.
 #' Default is \code{c("Title/Abstract")}. Common fields include: "Title/Abstract", "Title", "Author",
 #' "MeSH Terms", "Affiliation", "Journal".
-#' @param language is a character or NULL. Language filter (e.g. "english", "french"). Default is \code{NULL} (no filter).
-#' @param pub_type is a character or NULL. Publication type filter (e.g. "Journal Article", "Review", "Clinical Trial").
+#' @param language is a character or character vector or NULL. Language filter (e.g. "english", "french").
+#' Several languages are combined with OR. Default is \code{NULL} (no filter).
+#' @param pub_type is a character or character vector or NULL. Publication type filter
+#' (e.g. "Journal Article", "Review", "Clinical Trial"). Several types are combined with OR.
 #' Default is \code{NULL} (no filter).
 #' @param date_range is a character vector of length 2 or NULL. Date range in format \code{c("YYYY", "YYYY")} or
 #' \code{c("YYYY/MM/DD", "YYYY/MM/DD")}. Default is \code{NULL} (no filter).
@@ -119,18 +121,20 @@ pmQueryBuild <- function(terms = NULL,
     }
   }
 
-  ## Language
-  if (!is.null(language) && nzchar(language)) {
-    parts <- c(parts, sprintf("%s[LA]", language))
+  ## Language and publication type
+  filter_part <- function(x, tag) {
+    x <- x[!is.na(x) & nzchar(x)]
+    if (length(x) == 0) return(NULL)
+    x <- sprintf("%s[%s]", x, tag)
+    if (length(x) > 1) paste0("(", paste(x, collapse = " OR "), ")") else x
   }
-
-  ## Publication type
-  if (!is.null(pub_type) && nzchar(pub_type)) {
-    parts <- c(parts, sprintf("%s[PT]", pub_type))
-  }
+  parts <- c(parts, filter_part(language, "LA"), filter_part(pub_type, "PT"))
 
   ## Date range
-  if (!is.null(date_range) && length(date_range) == 2) {
+  if (!is.null(date_range)) {
+    if (length(date_range) != 2) {
+      stop("date_range must hold two dates: the first and the last.", call. = FALSE)
+    }
     parts <- c(parts, sprintf("%s:%s[DP]", date_range[1], date_range[2]))
   }
 

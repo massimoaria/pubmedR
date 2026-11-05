@@ -12,7 +12,7 @@ Description: A set of tools to extract bibliographic content from 'PubMed' datab
     It includes functions to search, download, and convert 'PubMed' bibliographic
     records into data frames compatible with the 'bibliometrix' package.
     Features include programmatic query building, batch downloading by PMID,
-    citation enrichment via 'NCBI' E-Link, and robust error handling with
+    citation enrichment via 'NCBI' E-Link and 'NIH iCite', and robust error handling with
     automatic retry logic.
 License: GPL-3
 URL: https://github.com/massimoaria/pubmedR
@@ -20,6 +20,7 @@ BugReports: https://github.com/massimoaria/pubmedR/issues
 Encoding: UTF-8
 LazyData: true
 Imports:
+    jsonlite,
     rentrez,
     XML
 Suggests:
@@ -29,5 +30,5 @@ Suggests:
     testthat (>= 3.0.0),
     withr
 Config/testthat/edition: 3
-RoxygenNote: 7.3.3
 VignetteBuilder: knitr
+Config/roxygen2/version: 8.1.0

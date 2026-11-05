@@ -37,14 +37,12 @@ to respect API rate limits.
 The output is compatible with \code{\link{pmApi2df}} for conversion to a dataframe.
 }
 \examples{
-
-\donttest{
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 # Download specific articles by PMID
 pmids <- c("34813985", "34813456", "34812345")
 D <- pmFetchById(pmids = pmids)
 M <- pmApi2df(D)
-}
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link{pmApiRequest}}

@@ -6,6 +6,55 @@
   the earliest date in the record's history, which is often one or two years
   before the publication (for example, the date the record was entered).
 
+* `pmApi2df()`: titles holding an inline tag ("PM<sub>2.5</sub>", an italic species
+  name) were `NA`, 385 of a sample of 1,500 records chosen to include them, and the
+  tagged words were lost from abstracts and keywords. All are now read in full.
+
+* `pmApi2df()`: an author with no fore name or initials, such as a single-name
+  author, shifted the names of the following authors. Each author is now read as a
+  whole, and no name ends in "NA".
+
+* `pmApi2df()`: collective authors are now kept in their place in `AU` and `AF`.
+
+* `pmApi2df()`: removing an e-mail address also removed the text around it, often the
+  country ("Pavia, Italy. m.rossi@unipv.it"). Only the address is removed now.
+
+* `pmApiRequest()` failed, losing what it had downloaded, beyond the 9,999 records
+  PubMed serves per search. The query is now split by date, so `limit` can exceed it.
+  `records_downloaded` is now the number of records actually received.
+
+* API calls: a retry no longer raises a warning, a client error (HTTP 4xx) is no
+  longer retried, and error messages no longer include a whole HTML page.
+
+* `pmEnrichCitations()`: an article whose citation count could not be retrieved had
+  `TC` set to 0. It now keeps its value, with a warning. Counts are requested in
+  batches, not one article at a time.
+
+* `pmQueryBuild()`: several values in `language` or `pub_type` failed, and they are
+  now combined with OR. A `date_range` without two dates is now an error, not ignored.
+
+* `pmCollect()`: `mesh_terms` alone no longer fails, `enrich = TRUE` no longer downloads
+  the records again, and it gains the arguments `author`, `journal` and `operator`.
+
+* `pmFetchById()` ignores missing PMIDs, and reports those returning no record.
+
+* Examples and tests no longer fail when NCBI is unavailable.
+
+## New functions
+
+* `pmICite()`: citation counts and the relative citation ratio from NIH iCite, usually
+  much higher than the counts from PubMed. `pmEnrichCitations(tc_source = "icite")`
+  uses them for `TC`.
+
+* `pmCountByYear()`: the publication trend of a query, without downloading records.
+
+* `pmFetchByDoi()`: download records by DOI, and see which DOIs are not in PubMed.
+
+## New columns
+
+* `pmApi2df()` adds `PT`, all the publication types of a record (`DT` holds only the
+  first, usually "Journal Article" even for a review), and `PMCID`.
+
 # pubmedR 1.0.2
 
 # pubmedR 1.0.1

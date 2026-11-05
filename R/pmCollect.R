@@ -5,8 +5,9 @@
 #' data frame, and (optionally) citation enrichment via NCBI E-Link.
 #'
 #' @param query is a character. A PubMed search query in Entrez syntax.
-#' Alternatively, if \code{terms} is provided, the query is built automatically
-#' using \code{\link{pmQueryBuild}} and this argument is ignored.
+#' Alternatively, if \code{terms} is provided, or if \code{query} is missing and any
+#' of \code{mesh_terms}, \code{author} or \code{journal} is provided, the query is
+#' built automatically using \code{\link{pmQueryBuild}}.
 #' @param terms is a character or character vector or NULL. Search terms passed to
 #' \code{\link{pmQueryBuild}}. When provided, a query is built automatically
 #' and the \code{query} argument is ignored. Default is \code{NULL}.
@@ -33,6 +34,12 @@
 #' Default is \code{NULL}.
 #' @param batch_size is numeric. Records per API request. Default is 200.
 #' @param verbose is logical. If \code{TRUE} (default), prints progress messages.
+#' @param author is a character or character vector or NULL. Author names for query
+#' building. Default is \code{NULL}.
+#' @param journal is a character or character vector or NULL. Journal names for query
+#' building. Default is \code{NULL}.
+#' @param operator is a character. Boolean operator combining \code{terms}, "AND" or
+#' "OR". Default is \code{"AND"}.
 #'
 #' @return a data frame containing bibliographic records, compatible with the
 #' \code{bibliometrix} package when \code{format = "bibliometrix"}.
@@ -50,9 +57,7 @@
 #'         \code{\link{pmEnrichCitations}}.
 #' }
 #'
-#' @examples
-#'
-#' \donttest{
+#' @examplesIf interactive()
 #' # Using a raw query string
 #' M <- pmCollect(
 #'   query = "bibliometric*[Title/Abstract] AND english[LA] AND 2020:2024[DP]",
@@ -75,7 +80,6 @@
 #'   limit = 10,
 #'   enrich = TRUE
 #' )
-#' }
 #'
 #' @seealso \code{\link{pmQueryBuild}}, \code{\link{pmQueryTotalCount}},
 #' \code{\link{pmApiRequest}}, \code{\link{pmApi2df}}, \code{\link{pmEnrichCitations}}
@@ -94,19 +98,26 @@ pmCollect <- function(query = NULL,
                       format = "bibliometrix",
                       api_key = NULL,
                       batch_size = 200,
-                      verbose = TRUE) {
+                      verbose = TRUE,
+                      author = NULL,
+                      journal = NULL,
+                      operator = "AND") {
 
   api_key <- get_api_key(api_key)
 
   ## Step 1: Build or validate query
-  if (!is.null(terms)) {
+  if (!is.null(terms) ||
+      (is.null(query) && !(is.null(mesh_terms) && is.null(author) && is.null(journal)))) {
     query <- pmQueryBuild(
       terms = terms,
       fields = fields,
       language = language,
       pub_type = pub_type,
       date_range = date_range,
-      mesh_terms = mesh_terms
+      mesh_terms = mesh_terms,
+      author = author,
+      journal = journal,
+      operator = operator
     )
     if (verbose) cat("Query: ", query, "\n\n")
   }
@@ -146,7 +157,7 @@ pmCollect <- function(query = NULL,
   ## Step 5: Enrich with citation data (optional)
   if (enrich) {
     if (verbose) cat("\nEnriching with citation data...\n")
-    M <- pmEnrichCitations(M, api_key = api_key)
+    M <- pmEnrichCitations(M, P = D, api_key = api_key, batch_size = batch_size)
   }
 
   if (verbose) cat("\nDone.\n")

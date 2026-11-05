@@ -7,7 +7,7 @@
 ^.*\.RData$
 ^.*\.jar
 ^.*\.net
-^.*\.xml
+^[^/]+\.xml$
 ^.*\.csv
 LICENCE.*$
 Rubbish

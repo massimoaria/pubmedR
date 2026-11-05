@@ -21,14 +21,11 @@
 #' Note: Citation data in PubMed is based on PubMed Central (PMC) and may not be as
 #' comprehensive as commercial citation databases (e.g. Web of Science, Scopus).
 #'
-#' @examples
-#'
-#' \donttest{
+#' @examplesIf interactive()
 #' # Find articles that cite PMID 25824007
 #' cites <- pmCitedBy(pmid = "25824007")
 #' cites$count
 #' cites$cited_by
-#' }
 #'
 #' @seealso \code{\link{pmReferences}}
 #' @seealso \code{\link{pmFetchById}}
@@ -89,14 +86,11 @@ pmCitedBy <- function(pmid, api_key = NULL) {
 #' is only available when the full text is deposited in PMC. Not all PubMed articles
 #' have reference data available.
 #'
-#' @examples
-#'
-#' \donttest{
+#' @examplesIf interactive()
 #' # Find references of PMID 25824007
 #' refs <- pmReferences(pmid = "25824007")
 #' refs$count
 #' refs$references
-#' }
 #'
 #' @seealso \code{\link{pmCitedBy}}
 #' @seealso \code{\link{pmFetchById}}
@@ -158,11 +152,16 @@ pmReferences <- function(pmid, api_key = NULL) {
 #'   than one source article are resolved to metadata (faster and cheaper).
 #'   References not resolved keep their free-text citation. Defaults to
 #'   \code{FALSE}.
-#' @param include_TC logical. When \code{TRUE} (default) also call
-#'   \code{\link{pmCitedBy}} for each source article and write the citation
-#'   count to \code{df$TC}. Disable to skip this step.
+#' @param include_TC logical. When \code{TRUE} (default) also retrieve the
+#'   citation count of each source article and write it to \code{df$TC}. An
+#'   article whose count could not be retrieved keeps its value, with a warning.
+#'   Disable to skip this step.
 #' @param batch_size integer. Number of records per API call when fetching
 #'   metadata. Defaults to 200 (NCBI's hard cap for efetch).
+#' @param tc_source character. Where citation counts come from: \code{"pubmed"}
+#'   (default), the articles in PubMed Central that cite the document, or
+#'   \code{"icite"}, the larger NIH Open Citation Collection (see
+#'   \code{\link{pmICite}}).
 #'
 #' @return The input dataframe with updated \code{CR} (cited references),
 #'   \code{NR} (number of references), and \code{TC} (times cited, if
@@ -178,14 +177,12 @@ pmReferences <- function(pmid, api_key = NULL) {
 #' convention used by bibliometrix; references with only free-text citations
 #' are kept verbatim (uppercased).
 #'
-#' @examples
-#' \donttest{
+#' @examplesIf interactive()
 #' query <- "bibliometric*[Title/Abstract] AND english[LA]
 #'          AND Journal Article[PT] AND 2000:2020[DP]"
 #' D <- pmApiRequest(query = query, limit = 10, api_key = NULL)
 #' M <- pmApi2df(D)
 #' M <- pmEnrichCitations(M, P = D)        # avoid the extra fetch
-#' }
 #'
 #' @seealso \code{\link{pmExtractReferences}}, \code{\link{pmCitedBy}},
 #'   \code{\link{pmFetchById}}, \code{\link{pmApi2df}}
@@ -197,9 +194,11 @@ pmEnrichCitations <- function(df,
                               resolve_pmids = TRUE,
                               only_multiple = FALSE,
                               include_TC = TRUE,
-                              batch_size = 200) {
+                              batch_size = 200,
+                              tc_source = c("pubmed", "icite")) {
 
   api_key <- get_api_key(api_key)
+  tc_source <- match.arg(tc_source)
 
   if (!"PMID" %in% names(df) || nrow(df) == 0) {
     message("No valid PMID field found in the dataframe.")
@@ -300,26 +299,68 @@ pmEnrichCitations <- function(df,
 
   ## ----- Step 5: optional TC enrichment via NCBI cited-by ----------------
   if (isTRUE(include_TC)) {
-    cat("\nEnriching TC via NCBI cited-by...\n")
-    pb <- utils::txtProgressBar(min = 0, max = length(pmids), style = 3)
-    last_time <- NULL
-    for (i in seq_along(pmids)) {
-      p <- pmids[i]
-      if (is.na(p) || !nzchar(p)) {
-        utils::setTxtProgressBar(pb, i)
-        next
-      }
-      last_time <- api_throttle(api_key, last_time)
-      cites <- tryCatch(
-        pmCitedBy(p, api_key = api_key),
-        error = function(e) list(cited_by = character(0), count = 0)
-      )
-      df$TC[i] <- cites$count
-      utils::setTxtProgressBar(pb, i)
+    cat("\nEnriching TC via", tc_source, "...\n")
+    counts <- if (tc_source == "icite") {
+      x <- pmICite(valid_pmids)
+      stats::setNames(x$citation_count, x$pmid)
+    } else {
+      citation_counts(valid_pmids, api_key)
     }
-    close(pb)
+    found <- which(pmids %in% names(counts) & !is.na(counts[pmids]))
+    df$TC[found] <- counts[pmids[found]]
+    if (length(found) < length(valid_pmids)) {
+      warning(
+        "No citation count for ", length(valid_pmids) - length(found),
+        " of ", length(valid_pmids), " articles: TC left unchanged for them.",
+        call. = FALSE
+      )
+    }
   }
 
   cat("\nCitation enrichment completed.\n")
   df
+}
+
+
+#' Citation counts of several articles, via E-Link
+#'
+#' @param pmids A character vector of PMIDs.
+#' @param api_key The API key, or \code{NULL}.
+#' @param batch_size PMIDs per request.
+#' @return A numeric vector named by PMID. A batch that fails is left out.
+#' @noRd
+citation_counts <- function(pmids, api_key = NULL, batch_size = 100) {
+  pmids <- unique(pmids)
+  counts <- numeric(0)
+  batches <- split(pmids, ceiling(seq_along(pmids) / batch_size))
+  pb <- utils::txtProgressBar(min = 0, max = max(length(batches), 1), style = 3)
+  last_time <- NULL
+  for (k in seq_along(batches)) {
+    last_time <- api_throttle(api_key, last_time)
+    ids <- batches[[k]]
+    links <- tryCatch(
+      api_call_with_retry(
+        entrez_link(
+          dbfrom = "pubmed",
+          id = ids,
+          db = "pubmed",
+          linkname = "pubmed_pubmed_citedin",
+          by_id = TRUE,
+          api_key = api_key
+        )
+      ),
+      error = function(e) NULL
+    )
+    if (!is.null(links)) {
+      if (length(ids) == 1) links <- list(links)
+      counts[ids] <- vapply(
+        links,
+        function(l) as.numeric(length(l$links$pubmed_pubmed_citedin)),
+        numeric(1)
+      )
+    }
+    utils::setTxtProgressBar(pb, k)
+  }
+  close(pb)
+  counts
 }

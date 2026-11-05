@@ -32,14 +32,12 @@ Note: Citation data in PubMed is based on PubMed Central (PMC) and may not be as
 comprehensive as commercial citation databases (e.g. Web of Science, Scopus).
 }
 \examples{
-
-\donttest{
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 # Find articles that cite PMID 25824007
 cites <- pmCitedBy(pmid = "25824007")
 cites$count
 cites$cited_by
-}
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link{pmReferences}}

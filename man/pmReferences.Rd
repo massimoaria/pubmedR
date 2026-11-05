@@ -33,14 +33,12 @@ is only available when the full text is deposited in PMC. Not all PubMed article
 have reference data available.
 }
 \examples{
-
-\donttest{
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 # Find references of PMID 25824007
 refs <- pmReferences(pmid = "25824007")
 refs$count
 refs$references
-}
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link{pmCitedBy}}

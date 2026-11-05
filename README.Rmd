@@ -37,6 +37,9 @@ It provides a complete toolkit to **search**, **download**, **convert**, and **e
 | `pmApiRequest()` | Download bibliographic metadata from PubMed |
 | `pmApi2df()` | Convert downloaded XML data into a data frame |
 | `pmFetchById()` | Download records by a list of PMIDs |
+| `pmFetchByDoi()` | Download records by DOI |
+| `pmCountByYear()` | The publication trend of a query, without downloading records |
+| `pmICite()` | Citation counts and field-normalised metrics from NIH iCite |
 | `pmCitedBy()` | Find articles that cite a given article |
 | `pmReferences()` | Find references cited by a given article |
 | `pmEnrichCitations()` | Add citation counts and references to a data frame |

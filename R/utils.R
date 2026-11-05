@@ -77,9 +77,10 @@ api_throttle <- function(api_key = NULL, last_request_time = NULL) {
 #'
 #' @param a A named character vector from \code{list2char}.
 #' @param items \code{names(a)}.
+#' @param rec The parsed record that \code{a} comes from.
 #' @return A named list of column values for a single row.
 #' @noRd
-extract_book_article <- function(a, items) {
+extract_book_article <- function(a, items, rec) {
   row <- list()
 
   ## Language
@@ -91,9 +92,7 @@ extract_book_article <- function(a, items) {
   row$DT <- dt
 
   ## Title (chapter)
-  ti <- a["BookDocument.ArticleTitle.text"]
-  if (is.na(ti)) ti <- a["BookDocument.ArticleTitle"]
-  row$TI <- ti
+  row$TI <- node_text(rec$BookDocument$ArticleTitle)
 
   ## Publication Year: Book.PubDate, then ContributionDate, then History
   py <- a["BookDocument.Book.PubDate.Year"]
@@ -109,36 +108,10 @@ extract_book_article <- function(a, items) {
   row$PY_IS <- a["BookDocument.Book.PubDate.Year"]
 
   ## Authors of the chapter (NOT the Book's editors under Book.AuthorList)
-  AU_last_ind <- which(items == "BookDocument.AuthorList.Author.LastName")
-  AU_first_ind <- which(items == "BookDocument.AuthorList.Author.ForeName")
-  AU_init_ind <- which(items == "BookDocument.AuthorList.Author.Initials")
-  if (length(AU_last_ind) > 0) {
-    nameAF <- paste(a[AU_last_ind], a[AU_first_ind], sep = ", ")
-    nameAU <- paste(a[AU_last_ind], a[AU_init_ind], sep = " ")
-    row$AF <- paste(nameAF, collapse = ";")
-    row$AU <- paste(nameAU, collapse = ";")
-  }
-
-  ## Affiliations
-  Aff_name_ind <- which(
-    items == "BookDocument.AuthorList.Author.AffiliationInfo.Affiliation"
-  )
-  if (length(Aff_name_ind) > 0) {
-    Affiliations <- a[Aff_name_ind]
-    Affiliations <- vapply(
-      Affiliations,
-      function(l) {
-        parts <- unlist(strsplit(l, ", "))
-        paste(parts[!grepl("@", parts, fixed = TRUE)], collapse = ", ")
-      },
-      character(1),
-      USE.NAMES = FALSE
-    )
-    Affiliations <- Affiliations[nzchar(trimws(Affiliations))]
-    unique_aff <- unique(Affiliations)
-    row$C1 <- paste(unique_aff, collapse = ";")
-    row$AU_UN <- row$C1
-  }
+  authors <- parse_authors(rec$BookDocument$AuthorList)
+  row$AU <- authors$AU
+  row$AF <- authors$AF
+  row$C1 <- row$AU_UN <- authors$C1
 
   ## Keywords
   DE_ind <- which(items == "BookDocument.KeywordList.Keyword.text")
@@ -147,19 +120,11 @@ extract_book_article <- function(a, items) {
   }
 
   ## Abstract
-  ind <- which(items == "BookDocument.Abstract.AbstractText.text")
-  if (length(ind) > 0) {
-    row$AB <- paste(a[ind], collapse = " ")
-  } else {
-    ind <- which(items == "BookDocument.Abstract.AbstractText")
-    if (length(ind) > 0) {
-      row$AB <- paste(a[ind], collapse = " ")
-    }
-  }
+  abstract <- rec$BookDocument$Abstract
+  row$AB <- collapse_nodes(abstract[names(abstract) == "AbstractText"], " ")
 
   ## Source = Book title
-  book_title <- a["BookDocument.Book.BookTitle.text"]
-  if (is.na(book_title)) book_title <- a["BookDocument.Book.BookTitle"]
+  book_title <- node_text(rec$BookDocument$Book$BookTitle)
   row$SO <- book_title
   row$JI <- book_title
   row$J9 <- book_title
@@ -197,6 +162,127 @@ extract_book_article <- function(a, items) {
 #' Null-coalescing operator
 #' @noRd
 `%||%` <- function(a, b) if (is.null(a)) b else a
+
+
+#' The text of a parsed XML element
+#'
+#' An element holding inline tags ("PM<sub>2.5</sub> levels") reaches R as a list
+#' of pieces, and only a plain element as a string. Put the pieces back in order,
+#' leaving out the attributes.
+#'
+#' @param x An element from \code{xmlToList()}, or \code{NULL}.
+#' @return A string, or \code{NA_character_} if the element is missing or empty.
+#' @noRd
+node_text <- function(x) {
+  if (is.null(x)) return(NA_character_)
+  if (is.list(x)) {
+    if (!is.null(names(x))) x <- x[names(x) != ".attrs"]
+    x <- vapply(x, function(piece) {
+      if (is.list(piece)) node_text(piece) else paste(piece, collapse = "")
+    }, character(1))
+    x <- paste(x[!is.na(x)], collapse = "")
+  }
+  x <- trimws(paste(x, collapse = ""))
+  if (nzchar(x)) x else NA_character_
+}
+
+
+#' The text of several XML elements in one string
+#' @param nodes A list of elements, or \code{NULL}.
+#' @param sep The separator.
+#' @return A string, or \code{NA_character_} if there is no text.
+#' @noRd
+collapse_nodes <- function(nodes, sep) {
+  if (length(nodes) == 0) return(NA_character_)
+  x <- vapply(nodes, node_text, character(1), USE.NAMES = FALSE)
+  x <- x[!is.na(x)]
+  if (length(x) == 0) NA_character_ else paste(x, collapse = sep)
+}
+
+
+#' Remove an e-mail address from an affiliation
+#'
+#' PubMed appends the address to the affiliation ("Pavia, Italy. Electronic
+#' address: m.rossi@unipv.it."), so everything else in that piece, the country
+#' above all, must stay.
+#'
+#' @param x A character vector of affiliations.
+#' @return The affiliations without addresses or the trailing punctuation.
+#' @noRd
+clean_affiliation <- function(x) {
+  label <- "(electronic address|e-?mail(\\s+address)?|email|correspondence)"
+  x <- gsub(
+    paste0("(?i)\\b", label, "\\s*:?\\s*(?=[^\\s,;]+@)"),
+    "",
+    x,
+    perl = TRUE
+  )
+  x <- gsub("[^\\s,;()]+@[^\\s,;()]+", "", x, perl = TRUE)
+  x <- gsub("\\(\\s*\\)", "", x)
+  x <- gsub("\\s+([,.;])", "\\1", gsub("\\s+", " ", x))
+  x <- gsub("[,.;]+\\s*[,.;]+", ".", x)
+  trimws(gsub("[,;:\\s]+$", "", trimws(x), perl = TRUE))
+}
+
+
+#' Read the author list of a record
+#'
+#' Each author is read as a whole: a name lacking its fore name or initials, as a
+#' single-name author or a collective author does, must not shift the following
+#' ones. Collective authors are kept, in their place in the list.
+#'
+#' @param author_list The \code{AuthorList} element of a parsed record.
+#' @return A list with the strings \code{AU}, \code{AF} and \code{C1}, each
+#'   \code{NA_character_} if there is nothing to report.
+#' @noRd
+parse_authors <- function(author_list) {
+  empty <- list(AU = NA_character_, AF = NA_character_, C1 = NA_character_)
+  authors <- author_list[names(author_list) == "Author"]
+  if (length(authors) == 0) return(empty)
+
+  names_au <- names_af <- character(length(authors))
+  aff <- character(0)
+  for (j in seq_along(authors)) {
+    author <- authors[[j]]
+    last <- node_text(author$CollectiveName)
+    if (!is.na(last)) {
+      names_au[j] <- names_af[j] <- last
+    } else {
+      last <- node_text(author$LastName)
+      if (!is.na(last)) {
+        initials <- node_text(author$Initials)
+        fore <- node_text(author$ForeName)
+        names_au[j] <- if (is.na(initials)) last else paste(last, initials)
+        names_af[j] <- if (is.na(fore)) last else paste0(last, ", ", fore)
+      }
+    }
+    info <- author[names(author) == "AffiliationInfo"]
+    aff <- c(aff, vapply(info, function(k) node_text(k$Affiliation), character(1)))
+  }
+
+  aff <- aff[!is.na(aff)]
+  aff <- clean_affiliation(aff)
+  aff <- unique(aff[nzchar(aff)])
+  list(
+    AU = if (any(nzchar(names_au))) paste(names_au[nzchar(names_au)], collapse = ";") else NA_character_,
+    AF = if (any(nzchar(names_af))) paste(names_af[nzchar(names_af)], collapse = ";") else NA_character_,
+    C1 = if (length(aff) > 0) paste(aff, collapse = ";") else NA_character_
+  )
+}
+
+
+#' Parse a batch returned by efetch
+#'
+#' @param doc The parsed XML document.
+#' @return The list of records.
+#' @noRd
+parse_batch <- function(doc) {
+  records <- xmlToList(doc, simplify = FALSE)
+  if ("ERROR" %in% names(records)) {
+    stop("PubMed returned an error: ", node_text(records$ERROR), call. = FALSE)
+  }
+  records
+}
 
 
 #' Extract the source PMID from a parsed XML record
@@ -238,9 +324,7 @@ extract_refs_from_record <- function(rec) {
     if (!identical(names(refs)[j], "Reference")) next
     r <- refs[[j]]
 
-    citation <- r$Citation
-    if (is.list(citation)) citation <- citation$text %||% paste(unlist(citation), collapse = " ")
-    citation <- if (is.null(citation)) NA_character_ else as.character(citation)
+    citation <- node_text(r$Citation)
 
     pmid <- NA_character_
     doi <- NA_character_
@@ -340,7 +424,10 @@ build_wos_cr_string <- function(row) {
 
 #' Execute an API call with retry logic
 #'
-#' Wraps an expression with error handling and exponential backoff retry.
+#' Wraps an expression with error handling and exponential backoff retry. A
+#' client error (HTTP 4xx other than 429) is final, and is not retried. The
+#' expression is evaluated anew at each attempt: re-forcing a failed promise
+#' would raise a warning every time.
 #'
 #' @param expr An expression to evaluate (typically an API call)
 #' @param max_retries Maximum number of retry attempts
@@ -348,27 +435,35 @@ build_wos_cr_string <- function(row) {
 #' @return The result of the expression
 #' @noRd
 api_call_with_retry <- function(expr, max_retries = 3, verbose = TRUE) {
+  call <- substitute(expr)
+  env <- parent.frame()
   for (attempt in seq_len(max_retries + 1)) {
     result <- tryCatch(
-      expr,
-      error = function(e) {
-        if (attempt > max_retries) {
-          stop(sprintf(
-            "API request failed after %d attempts. Last error: %s",
-            max_retries + 1, conditionMessage(e)
-          ), call. = FALSE)
-        }
-        wait_time <- min(2^(attempt - 1), 30)
-        if (verbose) {
-          message(sprintf(
-            "API request failed (attempt %d/%d): %s. Retrying in %ds...",
-            attempt, max_retries + 1, conditionMessage(e), wait_time
-          ))
-        }
-        Sys.sleep(wait_time)
-        return(NULL)
-      }
+      list(value = eval(call, env)),
+      error = function(e) e
     )
-    if (!is.null(result)) return(result)
+    if (!inherits(result, "error")) return(result$value)
+
+    ## The first line only: NCBI appends a whole HTML page to the message
+    reason <- strsplit(conditionMessage(result), "\n", fixed = TRUE)[[1]][1]
+    final <- grepl("HTTP failure: 4", reason, fixed = TRUE) &&
+      !grepl("HTTP failure: 429", reason, fixed = TRUE)
+    if (final) {
+      stop(sprintf("API request failed. %s", reason), call. = FALSE)
+    }
+    if (attempt > max_retries) {
+      stop(sprintf(
+        "API request failed after %d attempts. Last error: %s",
+        max_retries + 1, reason
+      ), call. = FALSE)
+    }
+    wait_time <- min(2^(attempt - 1), 30)
+    if (verbose) {
+      message(sprintf(
+        "API request failed (attempt %d/%d): %s. Retrying in %ds...",
+        attempt, max_retries + 1, reason, wait_time
+      ))
+    }
+    Sys.sleep(wait_time)
   }
 }
