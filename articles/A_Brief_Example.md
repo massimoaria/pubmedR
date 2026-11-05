@@ -1,4 +1,4 @@
-# pubmedR
+# pubmedR: A brief example
 
 ### An R-package to gather bibliographic data from PubMed.
 
@@ -8,6 +8,8 @@
     clinical trials from the PubMed database using NCBI REST APIs.
 
  
+
+*<https://massimoaria.github.io/pubmedR/>*
 
 *<https://github.com/massimoaria/pubmedR>*
 
@@ -121,10 +123,10 @@ citation counts and cited references.
       api_key    = NULL
     )
 
-    # Query: (bibliometric*[Title/Abstract]) AND english[LA] AND
-    #        Journal Article[PT] AND 2000:2020[DP]
+    # Query:  bibliometric*[Title/Abstract] AND english[LA] AND
+    #         Journal Article[PT] AND 2000:2020[DP]
     #
-    # Total records found: 2921
+    # Total records found: 3744
     # Records to download: 2000
 
 You can also pass a raw PubMed query string directly:
@@ -137,8 +139,8 @@ You can also pass a raw PubMed query string directly:
 Set `enrich = TRUE` to add citation counts (`TC`) and cited references
 (`CR`) via
 [`pmEnrichCitations()`](https://massimoaria.github.io/pubmedR/reference/pmEnrichCitations.md).
-Note that enrichment adds two API calls per record, so it is best used
-on smaller collections:
+It also looks up every cited PMID, so it takes longer on large
+collections:
 
     M <- pmCollect(
       terms      = "bibliometric*",
@@ -170,10 +172,12 @@ to compose it programmatically from parameters:
     )
 
     query
-    # [1] "(bibliometric*[Title/Abstract]) AND english[LA] AND
+    # [1] "bibliometric*[Title/Abstract] AND english[LA] AND
     #      Journal Article[PT] AND 2000:2020[DP]"
 
-Of course, you can still write the query manually if you prefer:
+Several values in `language` or `pub_type` are combined with OR, as in
+`language = c("english", "italian")`. Of course, you can still write the
+query manually if you prefer:
 
     query <- "bibliometric*[Title/Abstract] AND english[LA] AND Journal Article[PT] AND 2000:2020[DP]"
 
@@ -189,12 +193,21 @@ automatically translated query:
     res <- pmQueryTotalCount(query = query, api_key = api_key)
 
     res$total_count
-    # [1] 2921
+    # [1] 3744
 
     res$query_translation
-    # [1] "(bibliometric[Title/Abstract] OR bibliometrica[Title/Abstract] OR
-    #      ... OR bibliometricstrade[Title/Abstract]) AND english[LA] AND
-    #      Journal Article[PT] AND 2000[PDAT] : 2020[PDAT]"
+    # [1] "\"bibliometric*\"[Title/Abstract] AND \"english\"[Language] AND
+    #      \"journal article\"[Publication Type] AND
+    #      2000/01/01:2020/12/31[Date - Publication]"
+
+[`pmCountByYear()`](https://massimoaria.github.io/pubmedR/reference/pmCountByYear.md)
+shows how those records spread over the years, without downloading them:
+
+    pmCountByYear(query, years = 2018:2020)
+    #   year count
+    # 1 2018   482
+    # 2 2019   636
+    # 3 2020  1004
 
  
 
@@ -205,10 +218,11 @@ You can now download the whole collection (or a subset, by lowering
 
     D <- pmApiRequest(query = query, limit = res$total_count, api_key = api_key)
 
-    # Documents  200  of  2921
-    # Documents  400  of  2921
-    # ...
-    # Documents  2921  of  2921
+PubMed serves at most 9,999 records per search. If you ask for more,
+[`pmApiRequest()`](https://massimoaria.github.io/pubmedR/reference/pmApiRequest.md)
+splits the query by the date records were added to PubMed and downloads
+the parts in turn. The records then come in that order, newest first,
+not in the order of the original search.
 
 [`pmApiRequest()`](https://massimoaria.github.io/pubmedR/reference/pmApiRequest.md)
 returns a list with the following elements:
@@ -233,29 +247,41 @@ rows are documents and columns are field tags compatible with the
 
     M <- pmApi2df(D, format = "bibliometrix")
 
-    str(M)
-    # 'data.frame':   2918 obs. of  27 variables:
-    #  $ AU    : chr  ...
-    #  $ AF    : chr  ...
-    #  $ TI    : chr  ...
-    #  $ SO    : chr  ...
-    #  $ LA    : chr  ...
-    #  $ DT    : chr  ...
-    #  $ DE    : chr  ...
-    #  $ AB    : chr  ...
-    #  $ C1    : chr  ...
-    #  $ TC    : num  ...
-    #  $ PY    : num  ...
-    #  $ DI    : chr  ...
-    #  $ PMID  : chr  ...
-    #  ...
+    dim(M)
+    # [1] 3744   33
 
-Setting `format = "raw"` returns the data frame with all fields in their
-native PubMed form instead of the bibliometrix-style field tags.
+    names(M)
+    #  [1] "AU"        "AF"        "TI"        "SO"        "SO_CO"     "LA"
+    #  [7] "DT"        "PT"        "DE"        "ID"        "MESH"      "AB"
+    # [13] "C1"        "CR"        "TC"        "SN"        "J9"        "JI"
+    # [19] "PY"        "PY_IS"     "VL"        "IS"        "DI"        "PG"
+    # [25] "GRANT_ID"  "GRANT_ORG" "UT"        "PMID"      "PMCID"     "DB"
+    # [31] "AU_UN"     "AU_CO"     "AU1_CO"
+
+Setting `format = "raw"` keeps the same field tags, with the text as
+PubMed writes it rather than in upper case, and leaves out `AU_CO` and
+`AU1_CO`.
+
+Three fields are worth a closer look:
+
+- **`PY`** is the year of the journal issue. The `[DP]` tag in a query
+  also matches the electronic publication date, so a query can return
+  documents with a later `PY`: an article online in 2020 and in an issue
+  of 2021 matches `2000:2020[DP]`, and has `PY` 2021. Here this applies
+  to 163 of the 3,744 documents.
+
+- **`DT`** holds only the first publication type, usually “Journal
+  Article” even for a review. **`PT`** holds all of them:
+
+        sum(grepl("REVIEW", M$PT))
+        # [1] 862
+
+- **`AU`** also lists collective authors, in their place among the
+  others, so they count as authors in the analyses.
 
  
 
-### Fetching records by PMID
+### Fetching records by PMID or DOI
 
 If you already know which articles you want, you can bypass the query
 step and download records directly by their PubMed identifiers with
@@ -265,9 +291,17 @@ step and download records directly by their PubMed identifiers with
     D <- pmFetchById(pmids = pmids, api_key = api_key)
     M <- pmApi2df(D)
 
-The returned object follows the same structure as
+[`pmFetchByDoi()`](https://massimoaria.github.io/pubmedR/reference/pmFetchByDoi.md)
+does the same from DOIs, for instance to complete a collection from
+another database, and lists the DOIs that are not in PubMed:
+
+    D <- pmFetchByDoi(c("10.1038/nature14539", "10.9999/not.a.real.doi"))
+    D$not_found
+    # [1] "10.9999/not.a.real.doi"
+
+Both return the same structure as
 [`pmApiRequest()`](https://massimoaria.github.io/pubmedR/reference/pmApiRequest.md),
-so it can be fed into
+so the result can be fed into
 [`pmApi2df()`](https://massimoaria.github.io/pubmedR/reference/pmApi2df.md)
 exactly the same way.
 
@@ -275,32 +309,45 @@ exactly the same way.
 
 ### Citation enrichment
 
-pubmedR exposes three helpers to retrieve citation information via
-NCBI’s E-Link service (based on PubMed Central):
+PubMed records carry no citation count, so `TC` is 0 after the download.
+There are two sources for it:
 
-- `pmCitedBy(pmid)` - returns the PMIDs of articles citing the given
-  article;
-- `pmReferences(pmid)` - returns the PMIDs of articles referenced by the
-  given article;
-- `pmEnrichCitations(df)` - adds a `TC` (times cited) column and a `CR`
-  (cited references) column to a pubmedR data frame.
+- `pmCitedBy(pmid)` returns the PMIDs of the articles citing the given
+  article. They come from NCBI’s E-Link service, which counts citing
+  articles in PubMed Central.
+- `pmICite(pmids)` returns citation counts and the Relative Citation
+  Ratio from NIH iCite, built on the larger NIH Open Citation
+  Collection. No API key is needed.
 
-Example:
+The counts can differ widely:
 
-    cites <- pmCitedBy(pmid = "25824007")
-    cites$count
-    cites$cited_by
+    pmCitedBy(pmid = "25824007")$count
+    # [1] 31
 
-    refs <- pmReferences(pmid = "25824007")
-    refs$count
-    refs$references
+    pmICite("25824007")[, c("pmid", "citation_count", "relative_citation_ratio")]
+    #       pmid citation_count relative_citation_ratio
+    # 1 25824007             40                1.517149
 
-    # Add citation counts and references to an existing data frame
-    M_enriched <- pmEnrichCitations(M, api_key = api_key)
+For cited references:
 
-Note: citation data in PubMed comes from PubMed Central and is less
-comprehensive than commercial databases such as Web of Science or
-Scopus.
+- `pmExtractReferences(D)` returns one row per reference from the
+  records you already downloaded, with no further requests;
+- `pmReferences(pmid)` returns the PMIDs referenced by one article,
+  through E-Link, which works only for articles with full text in PubMed
+  Central.
+
+[`pmEnrichCitations()`](https://massimoaria.github.io/pubmedR/reference/pmEnrichCitations.md)
+adds `TC`, `CR` (cited references) and `NR` (their number) to a whole
+data frame. Pass the downloaded records as `P` to avoid fetching them
+again, and choose the source of the counts with `tc_source`:
+
+    M_enriched <- pmEnrichCitations(M, P = D, tc_source = "icite", api_key = api_key)
+
+An article whose count could not be retrieved keeps its `TC`, with a
+warning.
+
+Note: citation data from PubMed Central is less comprehensive than
+commercial databases such as Web of Science or Scopus.
 
  
 
@@ -314,14 +361,18 @@ descriptive and network analyses
     install.packages("bibliometrix")
     library(bibliometrix)
 
+    M <- convert2df(D, dbsource = "pubmed", format = "api")
     results <- biblioAnalysis(M)
-    summary(results)
+    summary(results, k = 10)
 
     # Main Information about data
     #
-    #  Documents                             2918
-    #  Sources (Journals, Books, etc.)       1275
-    #  Keywords Plus (ID)                    2245
-    #  Author's Keywords (DE)                4212
-    #  Period                                2000 - 2020
+    #  Timespan                              2000:2024
+    #  Sources (Journals, Books, etc)        1525
+    #  Documents                             3744
     #  ...
+
+You can also work in the Biblioshiny app, which can download from PubMed
+by itself:
+
+    biblioshiny()

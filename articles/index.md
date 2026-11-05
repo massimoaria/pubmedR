@@ -2,4 +2,5 @@
 
 ### All vignettes
 
-- [pubmedR](https://massimoaria.github.io/pubmedR/articles/A_Brief_Example.md):
+- [pubmedR: A brief
+  example](https://massimoaria.github.io/pubmedR/articles/A_Brief_Example.md):
