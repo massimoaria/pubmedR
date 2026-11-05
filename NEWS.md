@@ -1,5 +1,11 @@
 # pubmedR (development version)
 
+## Bug fixes
+
+* `pmApi2df()`: `PY` is now the year of the journal issue (or of the book), not
+  the earliest date in the record's history, which is often one or two years
+  before the publication (for example, the date the record was entered).
+
 # pubmedR 1.0.2
 
 # pubmedR 1.0.1

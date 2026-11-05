@@ -95,14 +95,16 @@ extract_book_article <- function(a, items) {
   if (is.na(ti)) ti <- a["BookDocument.ArticleTitle"]
   row$TI <- ti
 
-  ## Publication Year: History first, then ContributionDate, then Book.PubDate
-  ind <- which(items == "PubmedBookData.History.PubMedPubDate.Year")
-  if (length(ind) > 0) {
-    row$PY <- suppressWarnings(min(as.numeric(a[ind]), na.rm = TRUE))
+  ## Publication Year: Book.PubDate, then ContributionDate, then History
+  py <- a["BookDocument.Book.PubDate.Year"]
+  if (is.na(py)) py <- a["BookDocument.ContributionDate.Year"]
+  if (!is.na(py)) {
+    row$PY <- as.numeric(py)
   } else {
-    py <- a["BookDocument.ContributionDate.Year"]
-    if (is.na(py)) py <- a["BookDocument.Book.PubDate.Year"]
-    if (!is.na(py)) row$PY <- as.numeric(py)
+    ind <- which(items == "PubmedBookData.History.PubMedPubDate.Year")
+    if (length(ind) > 0) {
+      row$PY <- suppressWarnings(min(as.numeric(a[ind]), na.rm = TRUE))
+    }
   }
   row$PY_IS <- a["BookDocument.Book.PubDate.Year"]
 

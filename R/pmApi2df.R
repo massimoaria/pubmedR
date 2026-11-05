@@ -106,14 +106,26 @@ pmApi2df <- function(P, format = "bibliometrix") {
     ## Title
     df$TI[i] <- a["MedlineCitation.Article.ArticleTitle"]
 
-    ## Publication Year
-    ind <- which(items == "PubmedData.History.PubMedPubDate.Year")
-    if (length(ind) > 0) {
-      df$PY[i] <- min(as.numeric(a[ind]), na.rm = TRUE)
-    }
+    ## Publication Year: the journal issue. Its date is sometimes free text
+    ## ("1998 Dec-1999 Jan"), and only without one the record's history, whose
+    ## earliest date (entered, received, ...) often precedes the publication.
     df$PY_IS[i] <- a[
       "MedlineCitation.Article.Journal.JournalIssue.PubDate.Year"
     ]
+    py <- df$PY_IS[i]
+    if (is.na(py)) {
+      py <- substr(
+        a["MedlineCitation.Article.Journal.JournalIssue.PubDate.MedlineDate"],
+        1,
+        4
+      )
+    }
+    py <- suppressWarnings(as.numeric(py))
+    if (is.na(py)) {
+      ind <- which(items == "PubmedData.History.PubMedPubDate.Year")
+      if (length(ind) > 0) py <- min(as.numeric(a[ind]), na.rm = TRUE)
+    }
+    df$PY[i] <- py
 
     ## Authors
     AU_last_ind <- which(
