@@ -37,12 +37,11 @@ present in the XML. Use \code{\link{pmEnrichCitations}} to also resolve cited
 PMIDs into structured WoS-style citation strings.
 }
 \examples{
-\donttest{
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 D <- pmFetchById("37289732")
 refs <- pmExtractReferences(D)
 head(refs)
-}
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link{pmEnrichCitations}}, \code{\link{pmFetchById}}

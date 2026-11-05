@@ -61,3 +61,17 @@ test_that("pmQueryBuild handles multiple fields", {
   expect_true(grepl("Title", q))
   expect_true(grepl("Abstract", q))
 })
+
+
+test_that("pmQueryBuild combines several languages or publication types with OR", {
+  q <- pmQueryBuild(terms = "x", language = c("english", "italian"), pub_type = c("Review", "Editorial"))
+  expect_equal(
+    q,
+    "x[Title/Abstract] AND (english[LA] OR italian[LA]) AND (Review[PT] OR Editorial[PT])"
+  )
+  expect_equal(pmQueryBuild(terms = "x", language = "", pub_type = "Review"), "x[Title/Abstract] AND Review[PT]")
+})
+
+test_that("pmQueryBuild rejects a date_range without two dates", {
+  expect_error(pmQueryBuild(terms = "x", date_range = "2020"), "two dates")
+})

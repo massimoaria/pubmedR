@@ -1,0 +1,25 @@
+url: https://massimoaria.github.io/pubmedR/
+
+template:
+  bootstrap: 5
+
+reference:
+  - title: Search and download
+    contents:
+      - pmCollect
+      - pmQueryBuild
+      - pmQueryTotalCount
+      - pmCountByYear
+      - pmApiRequest
+      - pmFetchById
+      - pmFetchByDoi
+  - title: Convert
+    contents:
+      - pmApi2df
+  - title: Citations
+    contents:
+      - pmEnrichCitations
+      - pmICite
+      - pmCitedBy
+      - pmReferences
+      - pmExtractReferences

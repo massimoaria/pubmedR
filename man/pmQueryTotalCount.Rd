@@ -26,13 +26,11 @@ To obtain a free access to NCBI API, please visit: \href{https://pmc.ncbi.nlm.ni
 It counts the number of documents that a query returns from the NCBI PubMed database.
 }
 \examples{
-
-\donttest{
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 query <- "bibliometric*[Title/Abstract] AND english[LA]
            AND Journal Article[PT] AND 2000:2020[DP]"
 D <- pmQueryTotalCount(query = query, api_key = NULL)
-}
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link{pmApiRequest}}

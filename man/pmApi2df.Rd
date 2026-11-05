@@ -23,16 +23,14 @@ To obtain more information about how to write a NCBI search query, please visit:
 It converts PubMed data, downloaded using Entrez API, into a dataframe
 }
 \examples{
-
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 # Example: Querying a collection of publications
 
-\donttest{
 query <- "bibliometric*[Title/Abstract] AND english[LA]
          AND Journal Article[PT] AND 2000:2020[DP]"
 D <- pmApiRequest(query = query, limit = 100, api_key = NULL)
 M <- pmApi2df(D)
-}
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link{pmApiRequest}}

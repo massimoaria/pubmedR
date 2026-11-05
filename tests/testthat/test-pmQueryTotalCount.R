@@ -18,10 +18,10 @@ test_that("pmQueryTotalCount returns results for valid query", {
     "no PubMed API key set"
   )
 
-  result <- pmQueryTotalCount(
+  result <- ncbi_or_skip(pmQueryTotalCount(
     query = "bibliometric*[Title/Abstract] AND english[LA] AND 2020:2020[DP]",
     api_key = NULL
-  )
+  ))
   expect_true(result$total_count > 0)
   expect_type(result$query_translation, "character")
   expect_false(is.null(result$web_history))

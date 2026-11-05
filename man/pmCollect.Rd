@@ -17,13 +17,17 @@ pmCollect(
   format = "bibliometrix",
   api_key = NULL,
   batch_size = 200,
-  verbose = TRUE
+  verbose = TRUE,
+  author = NULL,
+  journal = NULL,
+  operator = "AND"
 )
 }
 \arguments{
 \item{query}{is a character. A PubMed search query in Entrez syntax.
-Alternatively, if \code{terms} is provided, the query is built automatically
-using \code{\link{pmQueryBuild}} and this argument is ignored.}
+Alternatively, if \code{terms} is provided, or if \code{query} is missing and any
+of \code{mesh_terms}, \code{author} or \code{journal} is provided, the query is
+built automatically using \code{\link{pmQueryBuild}}.}
 
 \item{terms}{is a character or character vector or NULL. Search terms passed to
 \code{\link{pmQueryBuild}}. When provided, a query is built automatically
@@ -62,6 +66,15 @@ Default is \code{NULL}.}
 \item{batch_size}{is numeric. Records per API request. Default is 200.}
 
 \item{verbose}{is logical. If \code{TRUE} (default), prints progress messages.}
+
+\item{author}{is a character or character vector or NULL. Author names for query
+building. Default is \code{NULL}.}
+
+\item{journal}{is a character or character vector or NULL. Journal names for query
+building. Default is \code{NULL}.}
+
+\item{operator}{is a character. Boolean operator combining \code{terms}, "AND" or
+"OR". Default is \code{"AND"}.}
 }
 \value{
 a data frame containing bibliographic records, compatible with the
@@ -86,8 +99,7 @@ This function chains together the core pubmedR functions in the recommended orde
 }
 }
 \examples{
-
-\donttest{
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 # Using a raw query string
 M <- pmCollect(
   query = "bibliometric*[Title/Abstract] AND english[LA] AND 2020:2024[DP]",
@@ -110,8 +122,7 @@ M <- pmCollect(
   limit = 10,
   enrich = TRUE
 )
-}
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link{pmQueryBuild}}, \code{\link{pmQueryTotalCount}},

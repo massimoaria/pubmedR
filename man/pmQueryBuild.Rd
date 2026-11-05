@@ -23,9 +23,11 @@ pmQueryBuild(
 Default is \code{c("Title/Abstract")}. Common fields include: "Title/Abstract", "Title", "Author",
 "MeSH Terms", "Affiliation", "Journal".}
 
-\item{language}{is a character or NULL. Language filter (e.g. "english", "french"). Default is \code{NULL} (no filter).}
+\item{language}{is a character or character vector or NULL. Language filter (e.g. "english", "french").
+Several languages are combined with OR. Default is \code{NULL} (no filter).}
 
-\item{pub_type}{is a character or NULL. Publication type filter (e.g. "Journal Article", "Review", "Clinical Trial").
+\item{pub_type}{is a character or character vector or NULL. Publication type filter
+(e.g. "Journal Article", "Review", "Clinical Trial"). Several types are combined with OR.
 Default is \code{NULL} (no filter).}
 
 \item{date_range}{is a character vector of length 2 or NULL. Date range in format \code{c("YYYY", "YYYY")} or

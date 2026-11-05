@@ -12,22 +12,20 @@
 #'
 #' To obtain more information about how to write a NCBI search query, please visit: \href{https://pubmed.ncbi.nlm.nih.gov/help/#search-tags}{https://pubmed.ncbi.nlm.nih.gov/help/#search-tags}
 #'
-#' @examples
-#'
+#' @examplesIf interactive()
 #' # Example: Querying a collection of publications
 #'
-#' \donttest{
 #' query <- "bibliometric*[Title/Abstract] AND english[LA]
 #'          AND Journal Article[PT] AND 2000:2020[DP]"
 #' D <- pmApiRequest(query = query, limit = 100, api_key = NULL)
 #' M <- pmApi2df(D)
-#' }
 #'
 #' @seealso \code{\link{pmApiRequest}}
 #' @seealso \code{\link{pmQueryTotalCount}}
 #'
 #' @export
 pmApi2df <- function(P, format = "bibliometrix") {
+  format <- match.arg(format, c("bibliometrix", "raw"))
   P <- P$data
 
   n <- length(P)
@@ -46,6 +44,7 @@ pmApi2df <- function(P, format = "bibliometrix") {
     SO_CO = NA_character_,
     LA = NA_character_,
     DT = NA_character_,
+    PT = NA_character_,
     DE = NA_character_,
     ID = NA_character_,
     MESH = NA_character_,
@@ -66,6 +65,7 @@ pmApi2df <- function(P, format = "bibliometrix") {
     GRANT_ORG = NA_character_,
     UT = NA_character_,
     PMID = NA_character_,
+    PMCID = NA_character_,
     DB = "PUBMED",
     AU_UN = NA_character_,
     stringsAsFactors = FALSE
@@ -85,12 +85,13 @@ pmApi2df <- function(P, format = "bibliometrix") {
   for (i in 1:n) {
     utils::setTxtProgressBar(pb, i)
 
-    a <- list2char(P[[i]])
+    rec <- P[[i]]
+    a <- list2char(rec)
     items <- names(a)
 
     ## Dispatch on record type: book chapters use a different XML structure
     if (identical(record_types[i], "PubmedBookArticle")) {
-      row <- extract_book_article(a, items)
+      row <- extract_book_article(a, items, rec)
       for (col in names(row)) df[[col]][i] <- row[[col]]
       next
     }
@@ -103,69 +104,57 @@ pmApi2df <- function(P, format = "bibliometrix") {
       "MedlineCitation.Article.PublicationTypeList.PublicationType.text"
     ]
 
-    ## Title
-    df$TI[i] <- a["MedlineCitation.Article.ArticleTitle"]
-
-    ## Publication Year
-    ind <- which(items == "PubmedData.History.PubMedPubDate.Year")
-    if (length(ind) > 0) {
-      df$PY[i] <- min(as.numeric(a[ind]), na.rm = TRUE)
+    ## All the publication types: DT holds only the first, usually "Journal
+    ## Article" even for a review
+    PT_ind <- which(
+      items == "MedlineCitation.Article.PublicationTypeList.PublicationType.text"
+    )
+    if (length(PT_ind) > 0) {
+      df$PT[i] <- paste(a[PT_ind], collapse = ";")
     }
+
+    ## Title
+    article <- rec$MedlineCitation$Article
+    df$TI[i] <- node_text(article$ArticleTitle)
+
+    ## Publication Year: the journal issue. Its date is sometimes free text
+    ## ("1998 Dec-1999 Jan"), and only without one the record's history, whose
+    ## earliest date (entered, received, ...) often precedes the publication.
     df$PY_IS[i] <- a[
       "MedlineCitation.Article.Journal.JournalIssue.PubDate.Year"
     ]
-
-    ## Authors
-    AU_last_ind <- which(
-      items == "MedlineCitation.Article.AuthorList.Author.LastName"
-    )
-    AU_first_ind <- which(
-      items == "MedlineCitation.Article.AuthorList.Author.ForeName"
-    )
-    AU_init_ind <- which(
-      items == "MedlineCitation.Article.AuthorList.Author.Initials"
-    )
-
-    if (length(AU_last_ind) > 0) {
-      nameAF <- paste(a[AU_last_ind], a[AU_first_ind], sep = ", ")
-      nameAU <- paste(a[AU_last_ind], a[AU_init_ind], sep = " ")
-      df$AF[i] <- paste(nameAF, collapse = ";")
-      df$AU[i] <- paste(nameAU, collapse = ";")
-    }
-
-    ## Affiliations - extract all author affiliations
-    Aff_name_ind <- which(
-      items ==
-        "MedlineCitation.Article.AuthorList.Author.AffiliationInfo.Affiliation"
-    )
-    if (length(Aff_name_ind) > 0) {
-      Affiliations <- a[Aff_name_ind]
-
-      ## Remove email addresses from affiliations
-      Affiliations <- vapply(
-        Affiliations,
-        function(l) {
-          parts <- unlist(strsplit(l, ", "))
-          paste(parts[!grepl("@", parts, fixed = TRUE)], collapse = ", ")
-        },
-        character(1),
-        USE.NAMES = FALSE
+    py <- df$PY_IS[i]
+    if (is.na(py)) {
+      py <- substr(
+        a["MedlineCitation.Article.Journal.JournalIssue.PubDate.MedlineDate"],
+        1,
+        4
       )
-
-      ## Remove empty affiliations
-      Affiliations <- Affiliations[nzchar(trimws(Affiliations))]
-
-      ## Unique affiliations for C1
-      unique_aff <- unique(Affiliations)
-      df$C1[i] <- paste(unique_aff, collapse = ";")
-      df$AU_UN[i] <- df$C1[i]
     }
+    py <- suppressWarnings(as.numeric(py))
+    if (is.na(py)) {
+      ind <- which(items == "PubmedData.History.PubMedPubDate.Year")
+      if (length(ind) > 0) py <- min(as.numeric(a[ind]), na.rm = TRUE)
+    }
+    df$PY[i] <- py
+
+    ## Authors and affiliations
+    authors <- parse_authors(article$AuthorList)
+    df$AU[i] <- authors$AU
+    df$AF[i] <- authors$AF
+    df$C1[i] <- df$AU_UN[i] <- authors$C1
 
     ## Keywords and MeSH
-    DE_ind <- which(items == "MedlineCitation.KeywordList.Keyword.text")
-    if (length(DE_ind) > 0) {
-      df$DE[i] <- paste(a[DE_ind], collapse = ";")
-    }
+    df$DE[i] <- collapse_nodes(
+      unlist(
+        lapply(
+          rec$MedlineCitation[names(rec$MedlineCitation) == "KeywordList"],
+          function(k) k[names(k) == "Keyword"]
+        ),
+        recursive = FALSE
+      ),
+      ";"
+    )
 
     ID_ind <- which(
       items == "MedlineCitation.MeshHeadingList.MeshHeading.DescriptorName.text"
@@ -174,16 +163,11 @@ pmApi2df <- function(P, format = "bibliometrix") {
       df$ID[i] <- df$MESH[i] <- paste(a[ID_ind], collapse = ";")
     }
 
-    ## Abstract - handle structured abstracts
-    ind <- which(items == "MedlineCitation.Article.Abstract.AbstractText.text")
-    if (length(ind) > 0) {
-      df$AB[i] <- paste(a[ind], collapse = " ")
-    } else {
-      ind <- which(items == "MedlineCitation.Article.Abstract.AbstractText")
-      if (length(ind) > 0) {
-        df$AB[i] <- paste(a[ind], collapse = " ")
-      }
-    }
+    ## Abstract: every section of a structured one, with its inline tags
+    df$AB[i] <- collapse_nodes(
+      article$Abstract[names(article$Abstract) == "AbstractText"],
+      " "
+    )
 
     ## Journal
     df$SO[i] <- a["MedlineCitation.Article.Journal.Title"]
@@ -198,6 +182,12 @@ pmApi2df <- function(P, format = "bibliometrix") {
     if (length(ind) > 0) {
       doi_val_ind <- doi_ind[ind] - 1
       df$DI[i] <- a[doi_val_ind]
+    }
+
+    ## PubMed Central identifier
+    pmc_val <- which(a[doi_ind] == "pmc")
+    if (length(pmc_val) > 0) {
+      df$PMCID[i] <- a[doi_ind[pmc_val[1]] - 1]
     }
 
     ## ISSN

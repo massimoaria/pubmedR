@@ -38,15 +38,19 @@ the Entrez query language or the helper function \code{\link{pmQueryBuild}}.
 }
 \details{
 Official API documentation is \href{https://www.ncbi.nlm.nih.gov/books/NBK25500/}{https://www.ncbi.nlm.nih.gov/books/NBK25500/}.
+
+
+PubMed serves only the first 9,999 records of a search. When more than that are
+requested, the query is split by the date each record was added to PubMed, and each
+part is downloaded in turn, so \code{limit} can exceed this figure. Records then
+come ordered by that date period, newest first, not as in the whole search.
 }
 \examples{
-
-\donttest{
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 query <- "bibliometric*[Title/Abstract] AND english[LA]
           AND Journal Article[PT] AND 2000:2020[DP]"
  D <- pmApiRequest(query = query, limit = 100, api_key = NULL)
-}
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link{pmQueryTotalCount}}

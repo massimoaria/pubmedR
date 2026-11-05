@@ -11,7 +11,8 @@ pmEnrichCitations(
   resolve_pmids = TRUE,
   only_multiple = FALSE,
   include_TC = TRUE,
-  batch_size = 200
+  batch_size = 200,
+  tc_source = c("pubmed", "icite")
 )
 }
 \arguments{
@@ -39,12 +40,18 @@ than one source article are resolved to metadata (faster and cheaper).
 References not resolved keep their free-text citation. Defaults to
 \code{FALSE}.}
 
-\item{include_TC}{logical. When \code{TRUE} (default) also call
-\code{\link{pmCitedBy}} for each source article and write the citation
-count to \code{df$TC}. Disable to skip this step.}
+\item{include_TC}{logical. When \code{TRUE} (default) also retrieve the
+citation count of each source article and write it to \code{df$TC}. An
+article whose count could not be retrieved keeps its value, with a warning.
+Disable to skip this step.}
 
 \item{batch_size}{integer. Number of records per API call when fetching
 metadata. Defaults to 200 (NCBI's hard cap for efetch).}
+
+\item{tc_source}{character. Where citation counts come from: \code{"pubmed"}
+(default), the articles in PubMed Central that cite the document, or
+\code{"icite"}, the larger NIH Open Citation Collection (see
+\code{\link{pmICite}}).}
 }
 \value{
 The input dataframe with updated \code{CR} (cited references),
@@ -67,14 +74,13 @@ convention used by bibliometrix; references with only free-text citations
 are kept verbatim (uppercased).
 }
 \examples{
-\donttest{
+\dontshow{if (interactive()) withAutoprint(\{ # examplesIf}
 query <- "bibliometric*[Title/Abstract] AND english[LA]
          AND Journal Article[PT] AND 2000:2020[DP]"
 D <- pmApiRequest(query = query, limit = 10, api_key = NULL)
 M <- pmApi2df(D)
 M <- pmEnrichCitations(M, P = D)        # avoid the extra fetch
-}
-
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link{pmExtractReferences}}, \code{\link{pmCitedBy}},

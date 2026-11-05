@@ -7,7 +7,7 @@
 ^.*\.RData$
 ^.*\.jar
 ^.*\.net
-^.*\.xml
+^[^/]+\.xml$
 ^.*\.csv
 LICENCE.*$
 Rubbish
@@ -20,3 +20,6 @@ Rubbish
 ^CRAN-SUBMISSION$
 ^cran-comments\.md$
 ^\.positai$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$

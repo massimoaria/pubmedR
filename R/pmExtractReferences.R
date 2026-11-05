@@ -27,12 +27,10 @@
 #' present in the XML. Use \code{\link{pmEnrichCitations}} to also resolve cited
 #' PMIDs into structured WoS-style citation strings.
 #'
-#' @examples
-#' \donttest{
+#' @examplesIf interactive()
 #' D <- pmFetchById("37289732")
 #' refs <- pmExtractReferences(D)
 #' head(refs)
-#' }
 #'
 #' @seealso \code{\link{pmEnrichCitations}}, \code{\link{pmFetchById}}
 #'
