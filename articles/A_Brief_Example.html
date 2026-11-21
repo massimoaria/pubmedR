@@ -75,7 +75,7 @@ clinical trials from the PubMed database using NCBI REST APIs.</code></pre>
 <p> </p>
 <p><em><a href="https://massimoaria.github.io/pubmedR/" class="uri">https://massimoaria.github.io/pubmedR/</a></em></p>
 <p><em><a href="https://github.com/massimoaria/pubmedR" class="external-link uri">https://github.com/massimoaria/pubmedR</a></em></p>
-<p><em>Latest version: 1.0.2.9000, 2026-11-05</em></p>
+<p><em>Latest version: 1.0.2.9000, 2026-11-21</em></p>
 <p> </p>
 <p><strong>by Massimo Aria</strong></p>
 <p>Full Professor in Social Statistics</p>
@@ -279,7 +279,7 @@ matching the query.</li>
 </h4>
 <p>Finally, transform the XML-structured object <code>D</code> into a
 data frame where rows are documents and columns are field tags
-compatible with the <strong>bibliometrix R package</strong> (<a href="https://CRAN.R-project.org/package=bibliometrix" class="external-link uri">https://CRAN.R-project.org/package=bibliometrix</a>, <a href="https://bibliometrix.org/" class="external-link uri">https://bibliometrix.org/</a>).</p>
+compatible with the <strong>bibliometrix R package</strong> (<a href="https://CRAN.R-project.org/package=bibliometrix" class="external-link uri">https://CRAN.R-project.org/package=bibliometrix</a>, <a href="https://www.bibliometrix.org/" class="external-link uri">https://www.bibliometrix.org/</a>).</p>
 <pre><code><span><span class="va">M</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pmApi2df.html">pmApi2df</a></span><span class="op">(</span><span class="va">D</span>, format <span class="op">=</span> <span class="st">"bibliometrix"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">M</span><span class="op">)</span></span>
@@ -384,7 +384,7 @@ commercial databases such as Web of Science or Scopus.</p>
 <h3 id="an-overview-of-the-collection-using-bibliometrix">An overview of the collection using bibliometrix<a class="anchor" aria-label="anchor" href="#an-overview-of-the-collection-using-bibliometrix"></a>
 </h3>
 <p>Once you have a data frame <code>M</code>, you can use
-<strong>bibliometrix</strong> for descriptive and network analyses (<a href="https://CRAN.R-project.org/package=bibliometrix" class="external-link uri">https://CRAN.R-project.org/package=bibliometrix</a>, <a href="https://bibliometrix.org/" class="external-link uri">https://bibliometrix.org/</a>).</p>
+<strong>bibliometrix</strong> for descriptive and network analyses (<a href="https://CRAN.R-project.org/package=bibliometrix" class="external-link uri">https://CRAN.R-project.org/package=bibliometrix</a>, <a href="https://www.bibliometrix.org/" class="external-link uri">https://www.bibliometrix.org/</a>).</p>
 <pre><code><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"bibliometrix"</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://www.bibliometrix.org" class="external-link">bibliometrix</a></span><span class="op">)</span></span>
 <span></span>

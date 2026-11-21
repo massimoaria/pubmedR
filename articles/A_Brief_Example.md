@@ -13,7 +13,7 @@
 
 *<https://github.com/massimoaria/pubmedR>*
 
-*Latest version: 1.0.2.9000, 2026-11-05*
+*Latest version: 1.0.2.9000, 2026-11-21*
 
  
 
@@ -243,7 +243,7 @@ Finally, transform the XML-structured object `D` into a data frame where
 rows are documents and columns are field tags compatible with the
 **bibliometrix R package**
 (<https://CRAN.R-project.org/package=bibliometrix>,
-<https://bibliometrix.org/>).
+<https://www.bibliometrix.org/>).
 
     M <- pmApi2df(D, format = "bibliometrix")
 
@@ -356,7 +356,7 @@ commercial databases such as Web of Science or Scopus.
 Once you have a data frame `M`, you can use **bibliometrix** for
 descriptive and network analyses
 (<https://CRAN.R-project.org/package=bibliometrix>,
-<https://bibliometrix.org/>).
+<https://www.bibliometrix.org/>).
 
     install.packages("bibliometrix")
     library(bibliometrix)

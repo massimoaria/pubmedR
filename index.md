@@ -81,13 +81,13 @@ they spread over the years:
 ``` r
 
 pmQueryTotalCount(query)$total_count
-#> [1] 12119
+#> [1] 12120
 
 pmCountByYear(query, years = 2022:2024)
 #>   year count
 #> 1 2022  3378
 #> 2 2023  4081
-#> 3 2024  5699
+#> 3 2024  5700
 ```
 
 Then download the records and convert them:

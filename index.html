@@ -142,13 +142,13 @@
 <p>Check how many records it finds before downloading them, and see how they spread over the years:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/pmQueryTotalCount.html">pmQueryTotalCount</a></span><span class="op">(</span><span class="va">query</span><span class="op">)</span><span class="op">$</span><span class="va">total_count</span></span>
-<span><span class="co">#&gt; [1] 12119</span></span>
+<span><span class="co">#&gt; [1] 12120</span></span>
 <span></span>
 <span><span class="fu"><a href="reference/pmCountByYear.html">pmCountByYear</a></span><span class="op">(</span><span class="va">query</span>, years <span class="op">=</span> <span class="fl">2022</span><span class="op">:</span><span class="fl">2024</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   year count</span></span>
 <span><span class="co">#&gt; 1 2022  3378</span></span>
 <span><span class="co">#&gt; 2 2023  4081</span></span>
-<span><span class="co">#&gt; 3 2024  5699</span></span></code></pre></div>
+<span><span class="co">#&gt; 3 2024  5700</span></span></code></pre></div>
 <p>Then download the records and convert them:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">D</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/pmApiRequest.html">pmApiRequest</a></span><span class="op">(</span><span class="va">query</span>, limit <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span>
