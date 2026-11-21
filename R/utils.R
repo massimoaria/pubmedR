@@ -1,4 +1,3 @@
-#' @keywords internal
 #' Flatten a nested list into a named character vector
 #'
 #' @param x A nested list (typically from XML parsing)
