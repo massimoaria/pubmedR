@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">pubmedR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.2.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,9 +37,9 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="pubmedr-development-version">pubmedR (development version)<a class="anchor" aria-label="anchor" href="#pubmedr-development-version"></a></h2>
+<h2 class="pkg-version" data-toc-text="1.1.0" id="pubmedr-110">pubmedR 1.1.0<a class="anchor" aria-label="anchor" href="#pubmedr-110"></a></h2>
 <div class="section level3">
-<h3 id="bug-fixes-development-version">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
+<h3 id="bug-fixes-1-1-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-1-0"></a></h3>
 <ul><li><p><code><a href="../reference/pmApi2df.html">pmApi2df()</a></code>: <code>PY</code> is now the year of the journal issue (or of the book), not the earliest date in the record’s history, which is often one or two years before the publication (for example, the date the record was entered).</p></li>
 <li><p><code><a href="../reference/pmApi2df.html">pmApi2df()</a></code>: titles holding an inline tag (“PM<sub>2.5</sub>”, an italic species name) were <code>NA</code>, 385 of a sample of 1,500 records chosen to include them, and the tagged words were lost from abstracts and keywords. All are now read in full.</p></li>
 <li><p><code><a href="../reference/pmApi2df.html">pmApi2df()</a></code>: an author with no fore name or initials, such as a single-name author, shifted the names of the following authors. Each author is now read as a whole, and no name ends in “NA”.</p></li>
@@ -54,13 +54,13 @@
 <li><p>Examples and tests no longer fail when NCBI is unavailable.</p></li>
 </ul></div>
 <div class="section level3">
-<h3 id="new-functions-development-version">New functions<a class="anchor" aria-label="anchor" href="#new-functions-development-version"></a></h3>
+<h3 id="new-functions-1-1-0">New functions<a class="anchor" aria-label="anchor" href="#new-functions-1-1-0"></a></h3>
 <ul><li><p><code><a href="../reference/pmICite.html">pmICite()</a></code>: citation counts and the relative citation ratio from NIH iCite, usually much higher than the counts from PubMed. <code>pmEnrichCitations(tc_source = "icite")</code> uses them for <code>TC</code>.</p></li>
 <li><p><code><a href="../reference/pmCountByYear.html">pmCountByYear()</a></code>: the publication trend of a query, without downloading records.</p></li>
 <li><p><code><a href="../reference/pmFetchByDoi.html">pmFetchByDoi()</a></code>: download records by DOI, and see which DOIs are not in PubMed.</p></li>
 </ul></div>
 <div class="section level3">
-<h3 id="new-columns-development-version">New columns<a class="anchor" aria-label="anchor" href="#new-columns-development-version"></a></h3>
+<h3 id="new-columns-1-1-0">New columns<a class="anchor" aria-label="anchor" href="#new-columns-1-1-0"></a></h3>
 <ul><li>
 <code><a href="../reference/pmApi2df.html">pmApi2df()</a></code> adds <code>PT</code>, all the publication types of a record (<code>DT</code> holds only the first, usually “Journal Article” even for a review), and <code>PMCID</code>.</li>
 </ul></div>
