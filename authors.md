@@ -8,16 +8,16 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/massimoaria/pubmedR/blob/v1.1.0/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/massimoaria/pubmedR/blob/master/DESCRIPTION)
 
 Aria M (2026). *pubmedR: Gathering Metadata About Publications, Grants,
-Clinical Trials from 'PubMed' Database*. R package version 1.1.0,
+Clinical Trials from 'PubMed' Database*. R package version 1.1.0.9000,
 <https://massimoaria.github.io/pubmedR/>.
 
     @Manual{,
       title = {pubmedR: Gathering Metadata About Publications, Grants, Clinical Trials from 'PubMed' Database},
       author = {Massimo Aria},
       year = {2026},
-      note = {R package version 1.1.0},
+      note = {R package version 1.1.0.9000},
       url = {https://massimoaria.github.io/pubmedR/},
     }

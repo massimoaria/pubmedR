@@ -1,5 +1,7 @@
 # Changelog
 
+## pubmedR (development version)
+
 ## pubmedR 1.1.0
 
 CRAN release: 2026-11-21
