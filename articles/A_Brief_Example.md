@@ -13,7 +13,7 @@
 
 *<https://github.com/massimoaria/pubmedR>*
 
-*Latest version: 1.1.0, 2026-11-21*
+*Latest version: 1.1.0, 2026-11-22*
 
  
 

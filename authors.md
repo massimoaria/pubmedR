@@ -8,7 +8,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/massimoaria/pubmedR/blob/master/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/massimoaria/pubmedR/blob/v1.1.0/DESCRIPTION)
 
 Aria M (2026). *pubmedR: Gathering Metadata About Publications, Grants,
 Clinical Trials from 'PubMed' Database*. R package version 1.1.0,

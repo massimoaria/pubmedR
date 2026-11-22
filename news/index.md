@@ -2,6 +2,8 @@
 
 ## pubmedR 1.1.0
 
+CRAN release: 2026-11-21
+
 ### Bug fixes
 
 - [`pmApi2df()`](https://massimoaria.github.io/pubmedR/reference/pmApi2df.md):
